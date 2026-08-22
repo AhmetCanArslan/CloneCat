@@ -1,0 +1,117 @@
+package com.arslan.clonecat.shortcut
+
+import android.content.Context
+import android.content.Intent
+import android.content.pm.ShortcutInfo
+import android.content.pm.ShortcutManager
+import android.graphics.drawable.Icon
+import com.arslan.clonecat.device.AppRepository
+import com.arslan.clonecat.device.DeviceUser
+import com.arslan.clonecat.device.UserType
+import com.arslan.clonecat.ui.LaunchProxyActivity
+
+/** Creates and maintains the pinned shortcuts that open an app inside another user. */
+object ShortcutRepository {
+
+    private const val PREFS = "clonecat_shortcuts"
+    private const val KEY_IDS = "pinned_ids"
+
+    fun idFor(userId: Int, pkg: String) = "u$userId:$pkg"
+
+    fun isSupported(context: Context): Boolean =
+        context.getSystemService(ShortcutManager::class.java)?.isRequestPinShortcutSupported == true
+
+    /**
+     * Asks the launcher to pin a shortcut for [pkg] in [user]. The component is resolved lazily by
+     * [LaunchProxyActivity] at launch time, so an app update that renames its activity still works;
+     * [component] is only stored as a hint.
+     */
+    suspend fun pin(
+        context: Context,
+        user: DeviceUser,
+        pkg: String,
+        component: String?
+    ): Boolean {
+        val manager = context.getSystemService(ShortcutManager::class.java) ?: return false
+        if (!manager.isRequestPinShortcutSupported) return false
+
+        val shortcut = build(context, user, pkg, component)
+        remember(context, shortcut.id)
+        return manager.requestPinShortcut(shortcut, null)
+    }
+
+    suspend fun build(
+        context: Context,
+        user: DeviceUser,
+        pkg: String,
+        component: String?
+    ): ShortcutInfo {
+        val label = AppRepository.label(context, user.id, pkg)
+        val icon = AppRepository.icon(context, user.id, pkg)
+        val intent = Intent(context, LaunchProxyActivity::class.java).apply {
+            action = LaunchProxyActivity.ACTION_LAUNCH
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            putExtra(LaunchProxyActivity.EXTRA_USER_ID, user.id)
+            putExtra(LaunchProxyActivity.EXTRA_PACKAGE, pkg)
+            putExtra(LaunchProxyActivity.EXTRA_COMPONENT, component)
+            putExtra(LaunchProxyActivity.EXTRA_USER_TYPE, user.type.name)
+            putExtra(LaunchProxyActivity.EXTRA_USER_LABEL, user.label)
+        }
+
+        return ShortcutInfo.Builder(context, idFor(user.id, pkg))
+            .setShortLabel(label)
+            .setLongLabel("$label · ${user.label}")
+            .setIcon(Icon.createWithBitmap(IconBadger.badged(context, icon, user.type, user.id)))
+            .setIntent(intent)
+            .build()
+    }
+
+    /** Refreshes labels/icons of live shortcuts and disables the ones whose target is gone. */
+    suspend fun sync(context: Context, users: List<DeviceUser>, appsByUser: Map<Int, Set<String>>) {
+        val manager = context.getSystemService(ShortcutManager::class.java) ?: return
+        val known = ids(context)
+        if (known.isEmpty()) return
+
+        val usersById = users.associateBy { it.id }
+        val alive = mutableListOf<ShortcutInfo>()
+        val stale = mutableListOf<String>()
+
+        known.forEach { id ->
+            val userId = id.removePrefix("u").substringBefore(':').toIntOrNull()
+            val pkg = id.substringAfter(':', "")
+            val user = userId?.let { usersById[it] }
+            if (user == null || pkg.isEmpty() || appsByUser[user.id]?.contains(pkg) != true) {
+                stale.add(id)
+                return@forEach
+            }
+            alive.add(build(context, user, pkg, null))
+        }
+
+        if (alive.isNotEmpty()) runCatching { manager.updateShortcuts(alive) }
+        if (stale.isNotEmpty()) {
+            runCatching {
+                manager.disableShortcuts(stale, context.getString(com.arslan.clonecat.R.string.shortcut_stale))
+            }
+            forget(context, stale)
+        }
+    }
+
+    fun ids(context: Context): Set<String> =
+        prefs(context).getStringSet(KEY_IDS, emptySet()).orEmpty()
+
+    private fun remember(context: Context, id: String) {
+        val updated = ids(context).toMutableSet().apply { add(id) }
+        prefs(context).edit().putStringSet(KEY_IDS, updated).apply()
+    }
+
+    private fun forget(context: Context, removed: Collection<String>) {
+        val updated = ids(context).toMutableSet().apply { removeAll(removed.toSet()) }
+        prefs(context).edit().putStringSet(KEY_IDS, updated).apply()
+    }
+
+    fun typeOf(name: String?): UserType =
+        runCatching { UserType.valueOf(name ?: "") }.getOrDefault(UserType.OTHER)
+
+    private fun prefs(context: Context) =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+}
