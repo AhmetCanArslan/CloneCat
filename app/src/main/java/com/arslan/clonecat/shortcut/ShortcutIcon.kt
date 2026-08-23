@@ -7,8 +7,10 @@ import android.content.pm.ShortcutManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.AdaptiveIconDrawable
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.Icon
+import android.util.DisplayMetrics
 import com.arslan.clonecat.R
 import com.arslan.clonecat.device.UserType
 
@@ -24,8 +26,8 @@ object ShortcutIcon {
     }
 
     fun of(context: Context, pkg: String, fallback: Drawable?): Icon {
-        val drawable = fallback ?: appIcon(context, pkg)
-        ?: return Icon.createWithResource(context, R.mipmap.ic_launcher)
+        val drawable = hiResIcon(context, pkg) ?: fallback
+            ?: return Icon.createWithResource(context, R.mipmap.ic_launcher)
 
         val size = iconSize(context)
         return if (drawable is AdaptiveIconDrawable) {
@@ -35,9 +37,15 @@ object ShortcutIcon {
         }
     }
 
-    private fun appIcon(context: Context, pkg: String): Drawable? = try {
-        context.packageManager.getApplicationIcon(pkg)
-    } catch (_: PackageManager.NameNotFoundException) {
+    private fun hiResIcon(context: Context, pkg: String): Drawable? = try {
+        val pm = context.packageManager
+        val info = pm.getApplicationInfo(pkg, 0)
+        val res = pm.getResourcesForApplication(info)
+        val id = info.icon
+        if (id == 0) pm.getApplicationIcon(info)
+        else res.getDrawableForDensity(id, DisplayMetrics.DENSITY_XXXHIGH, null)
+            ?: pm.getApplicationIcon(info)
+    } catch (_: Throwable) {
         null
     }
 
@@ -58,6 +66,10 @@ object ShortcutIcon {
     private fun rasterize(drawable: Drawable, size: Int): Bitmap {
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
+        (drawable as? BitmapDrawable)?.paint?.apply {
+            isFilterBitmap = true
+            isAntiAlias = true
+        }
         drawable.setBounds(0, 0, size, size)
         drawable.draw(canvas)
         return bitmap
@@ -68,6 +80,6 @@ object ShortcutIcon {
         val large = manager?.launcherLargeIconSize?.takeIf { it > 0 }
             ?: (108 * context.resources.displayMetrics.density).toInt()
         val max = context.getSystemService(ShortcutManager::class.java)?.iconMaxWidth ?: 0
-        return if (max > 0) minOf(large, max) else large
+        return maxOf(large * 2, max)
     }
 }
