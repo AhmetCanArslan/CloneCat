@@ -40,19 +40,25 @@ object ShortcutRepository {
         pkg: String,
         component: String?
     ): ShortcutInfo {
+        val id = idFor(user.id, pkg)
         val label = AppRepository.label(context, user.id, pkg)
         val icon = AppRepository.icon(context, user.id, pkg)
+        val target = component ?: rememberedComponent(context, id)
+        if (target != null) prefs(context).edit().putString("comp:$id", target).apply()
+
         val intent = Intent(context, LaunchProxyActivity::class.java).apply {
             action = LaunchProxyActivity.ACTION_LAUNCH
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            `package` = context.packageName
+            setClassName(context.packageName, LaunchProxyActivity::class.java.name)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION)
             putExtra(LaunchProxyActivity.EXTRA_USER_ID, user.id)
             putExtra(LaunchProxyActivity.EXTRA_PACKAGE, pkg)
-            putExtra(LaunchProxyActivity.EXTRA_COMPONENT, component)
+            putExtra(LaunchProxyActivity.EXTRA_COMPONENT, target)
             putExtra(LaunchProxyActivity.EXTRA_USER_TYPE, user.type.name)
             putExtra(LaunchProxyActivity.EXTRA_USER_LABEL, user.label)
         }
 
-        return ShortcutInfo.Builder(context, idFor(user.id, pkg))
+        return ShortcutInfo.Builder(context, id)
             .setShortLabel(label)
             .setLongLabel("$label · ${user.label}")
             .setIcon(ShortcutIcon.of(context, pkg, icon))
@@ -89,6 +95,9 @@ object ShortcutRepository {
         }
     }
 
+    private fun rememberedComponent(context: Context, id: String): String? =
+        prefs(context).getString("comp:$id", null)
+
     fun ids(context: Context): Set<String> =
         prefs(context).getStringSet(KEY_IDS, emptySet()).orEmpty()
 
@@ -99,7 +108,11 @@ object ShortcutRepository {
 
     private fun forget(context: Context, removed: Collection<String>) {
         val updated = ids(context).toMutableSet().apply { removeAll(removed.toSet()) }
-        prefs(context).edit().putStringSet(KEY_IDS, updated).apply()
+        prefs(context).edit().apply {
+            putStringSet(KEY_IDS, updated)
+            removed.forEach { remove("comp:$it") }
+            apply()
+        }
     }
 
     fun typeOf(name: String?): UserType =

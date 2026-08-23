@@ -12,6 +12,7 @@ import com.arslan.clonecat.device.Device
 import com.arslan.clonecat.device.DeviceErrors
 import com.arslan.clonecat.device.UserRepository
 import com.arslan.clonecat.device.UserType
+import com.arslan.clonecat.shell.ShellResult
 import com.arslan.clonecat.shell.ShizukuGate
 import com.arslan.clonecat.shortcut.ShortcutRepository
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -30,11 +31,12 @@ class LaunchProxyActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        overridePendingTransition(0, 0)
 
         val userId = intent.getIntExtra(EXTRA_USER_ID, -1)
         val pkg = intent.getStringExtra(EXTRA_PACKAGE)
         if (userId < 0 || pkg.isNullOrBlank()) {
-            finish()
+            done()
             return
         }
         val type = ShortcutRepository.typeOf(intent.getStringExtra(EXTRA_USER_TYPE))
@@ -42,7 +44,7 @@ class LaunchProxyActivity : AppCompatActivity() {
         if (!ShizukuGate.isReady(this)) {
             toast(getString(R.string.proxy_shizuku_missing))
             startActivity(Intent(this, SetupActivity::class.java))
-            finish()
+            done()
             return
         }
 
@@ -50,33 +52,43 @@ class LaunchProxyActivity : AppCompatActivity() {
     }
 
     private suspend fun launchTarget(userId: Int, pkg: String, type: UserType) {
-        val running = UserRepository.listUsers().firstOrNull { it.id == userId }
-        if (running == null) {
-            toast(getString(R.string.proxy_user_gone))
-            finish()
-            return
-        }
-        if (!running.running) UserRepository.startUser(userId)
+        var component = intent.getStringExtra(EXTRA_COMPONENT)?.takeUnless { it.isBlank() }
+        var result = component?.let { Device.run(AdbCommandBuilder.startActivity(userId, it)) }
 
-        val component = AppRepository.launcherComponent(this, userId, pkg)
-            ?: intent.getStringExtra(EXTRA_COMPONENT)
-        if (component.isNullOrBlank()) {
-            toast(getString(R.string.no_launcher_activity))
-            finish()
-            return
+        if (result == null || !started(result)) {
+            val user = UserRepository.listUsers().firstOrNull { it.id == userId }
+            if (user == null) {
+                toast(getString(R.string.proxy_user_gone))
+                done()
+                return
+            }
+            if (!user.running) UserRepository.startUser(userId)
+
+            component = AppRepository.launcherComponent(this, userId, pkg)
+            if (component.isNullOrBlank()) {
+                toast(getString(R.string.no_launcher_activity))
+                done()
+                return
+            }
+            result = Device.run(AdbCommandBuilder.startActivity(userId, component))
         }
 
-        val result = Device.run(AdbCommandBuilder.startActivity(userId, component))
         when {
-            result.success && type == UserType.SECONDARY -> {
-                offerSwitch(userId, component)
-            }
-            result.success -> finish()
-            else -> {
+            !started(result) -> {
                 toast(DeviceErrors.explain(result))
-                finish()
+                done()
             }
+            type == UserType.SECONDARY -> offerSwitch(userId, component!!)
+            else -> done()
         }
+    }
+
+    private fun started(result: ShellResult) =
+        result.success && !result.output.contains("Error:", ignoreCase = true)
+
+    private fun done() {
+        finish()
+        overridePendingTransition(0, 0)
     }
 
     private fun offerSwitch(userId: Int, component: String) {
@@ -87,11 +99,11 @@ class LaunchProxyActivity : AppCompatActivity() {
                 lifecycleScope.launch {
                     UserRepository.switchUser(userId)
                     Device.run(AdbCommandBuilder.startActivity(userId, component))
-                    finish()
+                    done()
                 }
             }
-            .setNegativeButton(android.R.string.cancel) { _, _ -> finish() }
-            .setOnCancelListener { finish() }
+            .setNegativeButton(android.R.string.cancel) { _, _ -> done() }
+            .setOnCancelListener { done() }
             .show()
     }
 
