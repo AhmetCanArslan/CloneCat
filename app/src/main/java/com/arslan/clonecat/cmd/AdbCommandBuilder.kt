@@ -1,14 +1,9 @@
 package com.arslan.clonecat.cmd
 
-/** A single shell command plus a human label; `argv` is exactly what the app runs. */
 data class DeviceCommand(val argv: String, val label: String) {
     fun asAdb(): String = "adb shell $argv"
 }
 
-/**
- * The only place command strings are built. Every repository call goes through it, so the UI can
- * show the exact `adb shell …` equivalent of what it just ran.
- */
 object AdbCommandBuilder {
 
     fun listUsers() = DeviceCommand("pm list users", "List users")

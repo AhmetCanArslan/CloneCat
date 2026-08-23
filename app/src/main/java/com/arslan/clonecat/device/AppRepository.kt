@@ -34,7 +34,6 @@ object AppRepository {
     private val labelCache = LruCache<String, String>(512)
     private val iconCache = LruCache<String, Drawable>(128)
 
-    /** Apps installed for [userId]; falls back to dumpsys when `pm` is blocked for that user. */
     suspend fun appsFor(userId: Int): List<AppEntry> {
         val results = Device.runAll(
             listOf(
@@ -55,7 +54,6 @@ object AppRepository {
         }
         if (apps.isNotEmpty()) return apps.sortedBy { it.packageName }
 
-        // Knox / Secure Folder style users block `pm`; dumpsys is the only remaining path.
         val dump = Device.run(AdbCommandBuilder.dumpsysPackages())
         if (!dump.success) return emptyList()
         return parseDumpsysPackages(dump.stdout, setOf(userId))[userId]
@@ -134,7 +132,6 @@ object AppRepository {
     suspend fun uninstall(userId: Int, pkg: String): ShellResult =
         Device.run(AdbCommandBuilder.uninstall(userId, pkg))
 
-    /** `pkg/activity` of the app's MAIN/LAUNCHER entry point inside [userId], or null. */
     suspend fun launcherComponent(context: Context, userId: Int, pkg: String): String? {
         val query = Device.run(AdbCommandBuilder.queryLauncherActivities(userId, pkg))
         componentIn(query.stdout, pkg)?.let { return it }
@@ -142,7 +139,6 @@ object AppRepository {
         val resolve = Device.run(AdbCommandBuilder.resolveLauncherActivity(userId, pkg))
         componentIn(resolve.stdout, pkg)?.let { return it }
 
-        // Last resort: the APK is shared across users, so user 0's PackageManager knows the entry.
         return withContext(Dispatchers.IO) {
             try {
                 context.packageManager.getLaunchIntentForPackage(pkg)?.component?.flattenToShortString()
@@ -176,10 +172,6 @@ object AppRepository {
         return icon
     }
 
-    /**
-     * The APK bytes are user-independent, so reading the archive gives label/icon for packages
-     * that user 0's PackageManager cannot see.
-     */
     private suspend fun archiveInfo(
         context: Context,
         userId: Int,

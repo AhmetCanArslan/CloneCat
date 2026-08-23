@@ -27,7 +27,6 @@ data class DeviceUser(
     val label: String get() = name.ifBlank { "User $id" }
 }
 
-/** Enumerates and controls the users that already exist. Creating users is deliberately absent. */
 object UserRepository {
 
     private val USER_LINE = Regex("""UserInfo\{(\d+):([^:]*):""")
@@ -43,7 +42,6 @@ object UserRepository {
         list.stdout.lineSequence().forEach { line ->
             val match = USER_LINE.find(line) ?: return@forEach
             val id = match.groupValues[1].toIntOrNull() ?: return@forEach
-            // `pm list users` prints user 0's name as literal "null" on AOSP builds.
             names[id] = match.groupValues[2].trim().takeUnless { it == "null" }.orEmpty()
             if (line.contains("running", ignoreCase = true)) running.add(id)
         }

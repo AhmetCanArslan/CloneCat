@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import rikka.shizuku.Shizuku
 
-/** Single source of truth for backend readiness. */
 object ShizukuGate {
 
     const val REQUEST_CODE = 4711

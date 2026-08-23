@@ -1,6 +1,5 @@
 package com.arslan.clonecat.cmd
 
-/** Ring buffer of the commands the app has actually run, shown in the commands sheet. */
 object CommandLog {
 
     private const val MAX = 200

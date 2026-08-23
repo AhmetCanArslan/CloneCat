@@ -3,6 +3,7 @@ package com.arslan.clonecat.shortcut
 import android.app.ActivityManager
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.pm.ShortcutManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.AdaptiveIconDrawable
@@ -22,32 +23,20 @@ object ShortcutIcon {
         UserType.OTHER -> 0xFF546E7A.toInt()
     }
 
-    /**
-     * The app's own launcher icon, unaltered.
-     *
-     * Preferred form is a resource reference: the launcher then loads and masks the icon exactly as
-     * it does on the app's normal home-screen entry. Only when the package is invisible to user 0
-     * do we fall back to a bitmap, and an adaptive icon must then be rendered **full-bleed** — its
-     * two layers drawn across the whole canvas without the drawable's own mask, because
-     * `createWithAdaptiveBitmap` masks and scales again. Handing over a pre-masked bitmap is what
-     * made pinned icons look shifted and cropped.
-     */
     fun of(context: Context, pkg: String, fallback: Drawable?): Icon {
-        resourceIcon(context, pkg)?.let { return it }
-        if (fallback == null) return Icon.createWithResource(context, R.mipmap.ic_launcher)
+        val drawable = fallback ?: appIcon(context, pkg)
+        ?: return Icon.createWithResource(context, R.mipmap.ic_launcher)
 
-        val size = launcherIconSize(context)
-        return if (fallback is AdaptiveIconDrawable) {
-            Icon.createWithAdaptiveBitmap(fullBleed(fallback, size))
+        val size = iconSize(context)
+        return if (drawable is AdaptiveIconDrawable) {
+            Icon.createWithAdaptiveBitmap(fullBleed(drawable, size))
         } else {
-            Icon.createWithBitmap(rasterize(fallback, size))
+            Icon.createWithBitmap(rasterize(drawable, size))
         }
     }
 
-    private fun resourceIcon(context: Context, pkg: String): Icon? = try {
-        val info = context.packageManager.getApplicationInfo(pkg, 0)
-        val resId = if (info.icon != 0) info.icon else 0
-        if (resId == 0) null else Icon.createWithResource(pkg, resId)
+    private fun appIcon(context: Context, pkg: String): Drawable? = try {
+        context.packageManager.getApplicationIcon(pkg)
     } catch (_: PackageManager.NameNotFoundException) {
         null
     }
@@ -74,9 +63,11 @@ object ShortcutIcon {
         return bitmap
     }
 
-    private fun launcherIconSize(context: Context): Int {
+    private fun iconSize(context: Context): Int {
         val manager = context.getSystemService(ActivityManager::class.java)
-        return manager?.launcherLargeIconSize?.takeIf { it > 0 }
+        val large = manager?.launcherLargeIconSize?.takeIf { it > 0 }
             ?: (108 * context.resources.displayMetrics.density).toInt()
+        val max = context.getSystemService(ShortcutManager::class.java)?.iconMaxWidth ?: 0
+        return if (max > 0) minOf(large, max) else large
     }
 }

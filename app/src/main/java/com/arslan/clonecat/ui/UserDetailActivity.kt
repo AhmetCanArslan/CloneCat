@@ -167,7 +167,6 @@ class UserDetailActivity : BaseActivity() {
         }
     }
 
-    /** Resolves the app's MAIN/LAUNCHER activity, then asks the launcher to pin a shortcut. */
     private fun pin(app: AppEntry) {
         lifecycleScope.launch {
             if (!ShortcutRepository.isSupported(this@UserDetailActivity)) {
@@ -179,7 +178,9 @@ class UserDetailActivity : BaseActivity() {
                 toast(getString(R.string.no_launcher_activity))
                 return@launch
             }
-            ShortcutRepository.pin(this@UserDetailActivity, user, app.packageName, component)
+            if (!ShortcutRepository.pin(this@UserDetailActivity, user, app.packageName, component)) {
+                toast(getString(R.string.pin_unsupported))
+            }
         }
     }
 
@@ -221,7 +222,6 @@ class UserDetailActivity : BaseActivity() {
             .show()
     }
 
-    /** Packages present in user 0 but missing here — the only things `install-existing` can add. */
     private fun openClonePicker() {
         clonePicker.launch(
             Intent(this, ClonePickerActivity::class.java)

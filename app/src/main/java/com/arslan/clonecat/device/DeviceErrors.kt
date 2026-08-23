@@ -2,7 +2,6 @@ package com.arslan.clonecat.device
 
 import com.arslan.clonecat.shell.ShellResult
 
-/** Turns the device's known failure strings into something a user can act on. */
 object DeviceErrors {
 
     fun explain(result: ShellResult): String {

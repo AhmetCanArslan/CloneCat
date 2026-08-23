@@ -17,10 +17,6 @@ import com.arslan.clonecat.shortcut.ShortcutRepository
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 
-/**
- * A pinned shortcut always runs in the user that pinned it, so it cannot start an activity of
- * another user directly. This transparent trampoline does it over the privileged shell instead.
- */
 class LaunchProxyActivity : AppCompatActivity() {
 
     companion object {
@@ -62,7 +58,6 @@ class LaunchProxyActivity : AppCompatActivity() {
         }
         if (!running.running) UserRepository.startUser(userId)
 
-        // Resolve the entry point every time: an app update can rename its launcher activity.
         val component = AppRepository.launcherComponent(this, userId, pkg)
             ?: intent.getStringExtra(EXTRA_COMPONENT)
         if (component.isNullOrBlank()) {
@@ -74,7 +69,6 @@ class LaunchProxyActivity : AppCompatActivity() {
         val result = Device.run(AdbCommandBuilder.startActivity(userId, component))
         when {
             result.success && type == UserType.SECONDARY -> {
-                // A full secondary user cannot draw over the foreground user; offer the switch.
                 offerSwitch(userId, component)
             }
             result.success -> finish()

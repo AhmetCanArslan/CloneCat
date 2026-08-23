@@ -9,7 +9,6 @@ import com.arslan.clonecat.device.DeviceUser
 import com.arslan.clonecat.device.UserType
 import com.arslan.clonecat.ui.LaunchProxyActivity
 
-/** Creates and maintains the pinned shortcuts that open an app inside another user. */
 object ShortcutRepository {
 
     private const val PREFS = "clonecat_shortcuts"
@@ -20,11 +19,6 @@ object ShortcutRepository {
     fun isSupported(context: Context): Boolean =
         context.getSystemService(ShortcutManager::class.java)?.isRequestPinShortcutSupported == true
 
-    /**
-     * Asks the launcher to pin a shortcut for [pkg] in [user]. The component is resolved lazily by
-     * [LaunchProxyActivity] at launch time, so an app update that renames its activity still works;
-     * [component] is only stored as a hint.
-     */
     suspend fun pin(
         context: Context,
         user: DeviceUser,
@@ -35,8 +29,9 @@ object ShortcutRepository {
         if (!manager.isRequestPinShortcutSupported) return false
 
         val shortcut = build(context, user, pkg, component)
-        remember(context, shortcut.id)
-        return manager.requestPinShortcut(shortcut, null)
+        val requested = runCatching { manager.requestPinShortcut(shortcut, null) }.getOrDefault(false)
+        if (requested) remember(context, shortcut.id)
+        return requested
     }
 
     suspend fun build(
@@ -65,7 +60,6 @@ object ShortcutRepository {
             .build()
     }
 
-    /** Refreshes labels/icons of live shortcuts and disables the ones whose target is gone. */
     suspend fun sync(context: Context, users: List<DeviceUser>, appsByUser: Map<Int, Set<String>>) {
         val manager = context.getSystemService(ShortcutManager::class.java) ?: return
         val known = ids(context)

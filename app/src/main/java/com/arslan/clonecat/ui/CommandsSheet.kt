@@ -10,7 +10,6 @@ import com.arslan.clonecat.cmd.CommandLog
 import com.arslan.clonecat.databinding.SheetCommandsBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
 
-/** Shows the adb equivalents of everything the app has run, with copy-all. */
 object CommandsSheet {
 
     fun show(context: Context) {

@@ -99,7 +99,6 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    /** The picked packages can go into several users at once — user 0 already has them. */
     private fun pickTargetUsers(packages: List<String>) {
         val targets = users.filter { it.type != UserType.PRIMARY }
         if (targets.isEmpty()) {
@@ -145,7 +144,6 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    /** Keeps pinned shortcuts in step with what is actually installed. */
     private suspend fun syncShortcuts(users: List<DeviceUser>) {
         val known = ShortcutRepository.ids(this)
         if (known.isEmpty()) return

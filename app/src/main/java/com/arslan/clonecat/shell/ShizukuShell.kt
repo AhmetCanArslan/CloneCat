@@ -5,10 +5,6 @@ import kotlinx.coroutines.withContext
 import rikka.shizuku.Shizuku
 import rikka.shizuku.ShizukuRemoteProcess
 
-/**
- * Runs commands through the Shizuku privileged process. Ported from ShizuWall's
- * ShizukuShellExecutor; batches are small here, so execBatch is a sequential loop.
- */
 object ShizukuShell : ShellExecutor {
 
     private val newProcess by lazy {

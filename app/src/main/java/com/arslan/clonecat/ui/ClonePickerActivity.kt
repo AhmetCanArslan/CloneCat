@@ -15,7 +15,6 @@ import com.arslan.clonecat.adapters.loadPickApps
 import com.arslan.clonecat.databinding.ActivityClonePickerBinding
 import kotlinx.coroutines.launch
 
-/** Picks packages from user 0 to `install-existing` into the target user. */
 class ClonePickerActivity : BaseActivity() {
 
     companion object {

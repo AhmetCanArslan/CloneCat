@@ -55,7 +55,6 @@ class PickAppAdapter(
     }
 }
 
-/** User-0 packages with labels/icons from the local PackageManager, sorted A-Z. */
 suspend fun loadPickApps(context: Context, exclude: Set<String>): Pair<List<PickApp>, Map<String, Boolean>> {
     val apps = AppRepository.appsFor(0).filter { it.packageName !in exclude }
     val system = apps.associate { it.packageName to it.isSystem }
