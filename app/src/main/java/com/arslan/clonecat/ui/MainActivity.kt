@@ -2,9 +2,11 @@ package com.arslan.clonecat.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
@@ -15,6 +17,7 @@ import com.arslan.clonecat.databinding.ActivityMainBinding
 import com.arslan.clonecat.device.AppRepository
 import com.arslan.clonecat.device.DeviceErrors
 import com.arslan.clonecat.device.DeviceUser
+import com.arslan.clonecat.device.PrivateCredentialStore
 import com.arslan.clonecat.device.UserRepository
 import com.arslan.clonecat.device.UserType
 import com.arslan.clonecat.shell.ShizukuGate
@@ -85,7 +88,41 @@ class MainActivity : BaseActivity() {
             startActivity(Intent(this, SetupActivity::class.java))
             true
         }
+        R.id.action_private_pin -> {
+            showPrivatePinDialog()
+            true
+        }
         else -> super.onOptionsItemSelected(item)
+    }
+
+    private fun showPrivatePinDialog() {
+        val input = EditText(this).apply {
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            hint = getString(R.string.private_pin_hint)
+            if (PrivateCredentialStore.has(this@MainActivity)) setText(PrivateCredentialStore.get(this@MainActivity))
+        }
+        val padding = (16 * resources.displayMetrics.density).toInt()
+        val container = android.widget.FrameLayout(this).apply {
+            setPadding(padding, 0, padding, 0)
+            addView(input)
+        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.private_pin_title)
+            .setMessage(R.string.private_pin_message)
+            .setView(container)
+            .setPositiveButton(R.string.private_pin_save) { _, _ ->
+                val pin = input.text.toString()
+                if (pin.isNotBlank()) {
+                    PrivateCredentialStore.save(this, pin)
+                    toast(getString(R.string.private_pin_saved))
+                }
+            }
+            .setNeutralButton(R.string.private_pin_clear) { _, _ ->
+                PrivateCredentialStore.clear(this)
+                toast(getString(R.string.private_pin_cleared))
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
     private fun load() {

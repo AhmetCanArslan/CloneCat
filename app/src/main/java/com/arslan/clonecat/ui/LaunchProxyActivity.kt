@@ -10,6 +10,7 @@ import com.arslan.clonecat.cmd.AdbCommandBuilder
 import com.arslan.clonecat.device.AppRepository
 import com.arslan.clonecat.device.Device
 import com.arslan.clonecat.device.DeviceErrors
+import com.arslan.clonecat.device.PrivateCredentialStore
 import com.arslan.clonecat.device.UserRepository
 import com.arslan.clonecat.device.UserType
 import com.arslan.clonecat.shell.ShellResult
@@ -66,7 +67,10 @@ class LaunchProxyActivity : ComponentActivity() {
                 UserRepository.startUser(userId)
                 user = UserRepository.listUsers().firstOrNull { it.id == userId }
             }
-            if (user == null || !user.unlocked) {
+            val pin = PrivateCredentialStore.get(this)
+            if (!pin.isNullOrBlank()) {
+                Device.run(AdbCommandBuilder.unlockUser(userId, pin))
+            } else if (user != null && !user.unlocked) {
                 toast(getString(R.string.proxy_private_locked))
                 finish()
                 return

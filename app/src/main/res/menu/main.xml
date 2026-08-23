@@ -13,4 +13,8 @@
         android:id="@+id/action_setup"
         android:title="@string/action_setup"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_private_pin"
+        android:title="@string/action_private_pin"
+        app:showAsAction="never" />
 </menu>

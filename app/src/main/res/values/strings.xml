@@ -55,6 +55,14 @@
     <string name="action_start_user">Start user</string>
     <string name="action_stop_user">Stop user</string>
     <string name="action_switch_user">Switch to user</string>
+    <string name="action_private_pin">Private space PIN</string>
+    <string name="private_pin_title">Private space PIN</string>
+    <string name="private_pin_message">Saved on-device with Android Keystore. Used to auto-unlock private space before launching a pinned shortcut.</string>
+    <string name="private_pin_hint">PIN / password</string>
+    <string name="private_pin_save">Save</string>
+    <string name="private_pin_clear">Clear</string>
+    <string name="private_pin_saved">Saved.</string>
+    <string name="private_pin_cleared">Cleared.</string>
 
     <string name="commands_title">Commands run</string>
     <string name="commands_empty">Nothing has been run yet.</string>
