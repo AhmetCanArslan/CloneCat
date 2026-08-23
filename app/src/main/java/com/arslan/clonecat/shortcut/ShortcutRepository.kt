@@ -50,7 +50,7 @@ object ShortcutRepository {
             action = LaunchProxyActivity.ACTION_LAUNCH
             `package` = context.packageName
             setClassName(context.packageName, LaunchProxyActivity::class.java.name)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             putExtra(LaunchProxyActivity.EXTRA_USER_ID, user.id)
             putExtra(LaunchProxyActivity.EXTRA_PACKAGE, pkg)
             putExtra(LaunchProxyActivity.EXTRA_COMPONENT, target)

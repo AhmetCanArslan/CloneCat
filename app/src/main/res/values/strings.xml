@@ -44,6 +44,7 @@
     <string name="secondary_launch_hint">Started in a full secondary user — it will only be visible after switching to that user.</string>
 
     <string name="proxy_shizuku_missing">Shizuku is not ready.</string>
+    <string name="proxy_private_locked">Private space is locked. Unlock it, then tap the shortcut again.</string>
     <string name="proxy_user_gone">That user no longer exists.</string>
     <string name="proxy_secondary_message">This app lives in a full secondary user, which cannot draw over the current user. Switch to it now?</string>
 

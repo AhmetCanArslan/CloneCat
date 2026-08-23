@@ -2,6 +2,8 @@ package com.arslan.clonecat.shell
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.SystemClock
+import kotlinx.coroutines.delay
 import rikka.shizuku.Shizuku
 
 object ShizukuGate {
@@ -24,6 +26,18 @@ object ShizukuGate {
     }
 
     fun isReady(context: Context): Boolean = state(context) == State.READY
+
+    suspend fun awaitReady(context: Context, timeoutMs: Long = 3000): Boolean {
+        val deadline = SystemClock.uptimeMillis() + timeoutMs
+        while (true) {
+            when (state(context)) {
+                State.READY -> return true
+                State.NOT_INSTALLED, State.NO_PERMISSION -> return false
+                State.NOT_RUNNING -> if (SystemClock.uptimeMillis() >= deadline) return false
+            }
+            delay(25)
+        }
+    }
 
     fun hasPermission(): Boolean = try {
         if (Shizuku.isPreV11()) false

@@ -32,6 +32,7 @@ object UserRepository {
     private val USER_LINE = Regex("""UserInfo\{(\d+):([^:]*):""")
     private val TYPE_LINE = Regex("""Type:\s*(\S+)""")
     private val STATE_LINE = Regex("""State:\s*(\S+)""")
+    private val UNLOCK_TIME_LINE = Regex("""Unlock time:\s*(.+)""")
 
     suspend fun listUsers(): List<DeviceUser> {
         val list = Device.run(AdbCommandBuilder.listUsers())
@@ -85,6 +86,10 @@ object UserRepository {
                 val state = match.groupValues[1]
                 if (state.startsWith("RUNNING")) running.add(current)
                 if (state.contains("UNLOCK")) unlocked.add(current)
+                return@forEach
+            }
+            UNLOCK_TIME_LINE.matchEntire(line)?.let { match ->
+                if (match.groupValues[1].trim() != "<unknown>") unlocked.add(current)
             }
         }
     }

@@ -1,7 +1,7 @@
 package com.arslan.clonecat.cmd
 
-data class DeviceCommand(val argv: String, val label: String) {
-    fun asAdb(): String = "adb shell $argv"
+data class DeviceCommand(val argv: String, val label: String, val logArgv: String = argv) {
+    fun asAdb(): String = "adb shell $logArgv"
 }
 
 object AdbCommandBuilder {
@@ -55,6 +55,7 @@ object AdbCommandBuilder {
 
     fun unlockUser(userId: Int, credential: String) = DeviceCommand(
         "cmd lock_settings verify --user $userId --old $credential",
-        "Unlock user $userId"
+        "Unlock user $userId",
+        "cmd lock_settings verify --user $userId --old ****"
     )
 }

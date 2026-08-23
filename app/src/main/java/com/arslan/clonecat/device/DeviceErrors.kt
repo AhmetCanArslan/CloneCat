@@ -12,7 +12,7 @@ object DeviceErrors {
                 "This ROM refuses `install-existing` for third-party apps in a clone user. " +
                     "Use the OEM Dual Apps screen for this package."
             lower.contains("not running") || lower.contains("not unlocked") ->
-                "Target user is stopped or locked. Start it (and unlock private space) first."
+                "Target user is stopped or locked. Start or unlock it first."
             lower.contains("do not have permission") || lower.contains("security exception") ->
                 "Shizuku's shell lacks permission for this user. Some OEM profiles block it."
             lower.contains("no such user") || lower.contains("bad user number") ->
