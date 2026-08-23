@@ -17,7 +17,6 @@ import com.arslan.clonecat.shell.ShellResult
 import com.arslan.clonecat.shell.ShizukuGate
 import com.arslan.clonecat.shortcut.ShortcutRepository
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class LaunchProxyActivity : ComponentActivity() {
@@ -33,6 +32,7 @@ class LaunchProxyActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_launch_proxy)
 
         val userId = intent.getIntExtra(EXTRA_USER_ID, -1)
         val pkg = intent.getStringExtra(EXTRA_PACKAGE)
@@ -42,10 +42,7 @@ class LaunchProxyActivity : ComponentActivity() {
         }
         val type = ShortcutRepository.typeOf(intent.getStringExtra(EXTRA_USER_TYPE))
 
-        lifecycleScope.launch {
-            delay(500)
-            launchTarget(userId, pkg, type)
-        }
+        lifecycleScope.launch { launchTarget(userId, pkg, type) }
     }
 
     private suspend fun launchTarget(userId: Int, pkg: String, type: UserType) {
