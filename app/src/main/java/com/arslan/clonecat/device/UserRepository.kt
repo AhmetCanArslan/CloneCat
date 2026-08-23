@@ -43,7 +43,8 @@ object UserRepository {
         list.stdout.lineSequence().forEach { line ->
             val match = USER_LINE.find(line) ?: return@forEach
             val id = match.groupValues[1].toIntOrNull() ?: return@forEach
-            names[id] = match.groupValues[2].trim()
+            // `pm list users` prints user 0's name as literal "null" on AOSP builds.
+            names[id] = match.groupValues[2].trim().takeUnless { it == "null" }.orEmpty()
             if (line.contains("running", ignoreCase = true)) running.add(id)
         }
         if (names.isEmpty()) return emptyList()

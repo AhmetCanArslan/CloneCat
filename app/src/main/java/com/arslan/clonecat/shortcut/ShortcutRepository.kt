@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
-import android.graphics.drawable.Icon
 import com.arslan.clonecat.device.AppRepository
 import com.arslan.clonecat.device.DeviceUser
 import com.arslan.clonecat.device.UserType
@@ -61,7 +60,7 @@ object ShortcutRepository {
         return ShortcutInfo.Builder(context, idFor(user.id, pkg))
             .setShortLabel(label)
             .setLongLabel("$label · ${user.label}")
-            .setIcon(Icon.createWithBitmap(IconBadger.badged(context, icon, user.type, user.id)))
+            .setIcon(ShortcutIcon.of(context, pkg, icon))
             .setIntent(intent)
             .build()
     }

@@ -33,7 +33,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:maxLines="1"
-            android:ellipsize="middle"
+            android:ellipsize="end"
             android:textAppearance="?attr/textAppearanceBodySmall" />
     </LinearLayout>
 
@@ -42,6 +42,11 @@
         style="@style/Widget.Material3.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:minWidth="0dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:insetLeft="0dp"
+        android:insetRight="0dp"
         android:text="@string/launch" />
 
     <com.google.android.material.button.MaterialButton
@@ -49,6 +54,11 @@
         style="@style/Widget.Material3.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:minWidth="0dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:insetLeft="0dp"
+        android:insetRight="0dp"
         android:text="@string/pin" />
 
     <com.google.android.material.button.MaterialButton
@@ -56,5 +66,10 @@
         style="@style/Widget.Material3.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:minWidth="0dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:insetLeft="0dp"
+        android:insetRight="0dp"
         android:text="@string/remove" />
 </LinearLayout>
