@@ -40,6 +40,11 @@
             android:parentActivityName=".ui.MainActivity" />
 
         <activity
+            android:name=".ui.ClonePickerActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.UserDetailActivity" />
+
+        <activity
             android:name=".ui.SetupActivity"
             android:exported="false" />
 

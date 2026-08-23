@@ -19,6 +19,11 @@
     <string name="done">Done</string>
 
     <string name="clone_title">Clone into %1$s</string>
+    <string name="clone_selected">Clone %1$d</string>
+    <string name="clone_into_users_title">Clone %1$d app(s) into</string>
+    <string name="select_apps_title">Select apps</string>
+    <string name="already_cloned">Already cloned</string>
+    <string name="no_target_users">No profiles or secondary users on this device.</string>
     <string name="clone_done">Cloned %1$d app(s).</string>
     <string name="clone_failed_title">Some apps could not be cloned</string>
     <string name="nothing_to_clone">Every user-0 app is already installed here.</string>

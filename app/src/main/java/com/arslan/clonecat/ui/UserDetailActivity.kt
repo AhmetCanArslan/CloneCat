@@ -1,5 +1,6 @@
 package com.arslan.clonecat.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -7,6 +8,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.arslan.clonecat.R
@@ -38,6 +40,11 @@ class UserDetailActivity : BaseActivity() {
     private var allApps: List<AppEntry> = emptyList()
     private var showSystem = false
     private var query: String = ""
+
+    private val clonePicker = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val packages = result.data?.getStringArrayExtra(ClonePickerActivity.RESULT_PACKAGES).orEmpty()
+        if (result.resultCode == RESULT_OK && packages.isNotEmpty()) cloneInto(packages.toList())
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -216,34 +223,11 @@ class UserDetailActivity : BaseActivity() {
 
     /** Packages present in user 0 but missing here — the only things `install-existing` can add. */
     private fun openClonePicker() {
-        binding.progress.visibility = View.VISIBLE
-        lifecycleScope.launch {
-            val here = allApps.map { it.packageName }.toSet()
-            val candidates = AppRepository.appsFor(0)
-                .filter { !it.isSystem && it.packageName !in here }
-                .map { it.packageName }
-                .sorted()
-            val labels = candidates.map { AppRepository.label(this@UserDetailActivity, 0, it) }
-            binding.progress.visibility = View.GONE
-
-            if (candidates.isEmpty()) {
-                toast(getString(R.string.nothing_to_clone))
-                return@launch
-            }
-
-            val checked = BooleanArray(candidates.size)
-            MaterialAlertDialogBuilder(this@UserDetailActivity)
-                .setTitle(getString(R.string.clone_title, user.label))
-                .setMultiChoiceItems(labels.toTypedArray(), checked) { _, index, isChecked ->
-                    checked[index] = isChecked
-                }
-                .setPositiveButton(R.string.clone) { _, _ ->
-                    val selected = candidates.filterIndexed { index, _ -> checked[index] }
-                    cloneInto(selected)
-                }
-                .setNegativeButton(android.R.string.cancel, null)
-                .show()
-        }
+        clonePicker.launch(
+            Intent(this, ClonePickerActivity::class.java)
+                .putExtra(ClonePickerActivity.EXTRA_USER_LABEL, user.label)
+                .putExtra(ClonePickerActivity.EXTRA_INSTALLED, allApps.map { it.packageName }.toTypedArray())
+        )
     }
 
     private fun cloneInto(packages: List<String>) {

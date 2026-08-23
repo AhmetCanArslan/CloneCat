@@ -4,22 +4,35 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.arslan.clonecat.R
 import com.arslan.clonecat.adapters.UserAdapter
 import com.arslan.clonecat.databinding.ActivityMainBinding
 import com.arslan.clonecat.device.AppRepository
+import com.arslan.clonecat.device.DeviceErrors
 import com.arslan.clonecat.device.DeviceUser
 import com.arslan.clonecat.device.UserRepository
+import com.arslan.clonecat.device.UserType
 import com.arslan.clonecat.shell.ShizukuGate
 import com.arslan.clonecat.shortcut.ShortcutRepository
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 
 class MainActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: UserAdapter
+
+    private var users: List<DeviceUser> = emptyList()
+
+    private val clonePicker = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val packages = result.data?.getStringArrayExtra(ClonePickerActivity.RESULT_PACKAGES).orEmpty()
+        if (result.resultCode == RESULT_OK && packages.isNotEmpty()) pickTargetUsers(packages.toList())
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +52,9 @@ class MainActivity : BaseActivity() {
         binding.userList.layoutManager = LinearLayoutManager(this)
         binding.userList.adapter = adapter
         binding.swipeRefresh.setOnRefreshListener { load() }
+        binding.cloneFab.setOnClickListener {
+            clonePicker.launch(Intent(this, ClonePickerActivity::class.java))
+        }
     }
 
     override fun onResume() {
@@ -75,12 +91,57 @@ class MainActivity : BaseActivity() {
     private fun load() {
         binding.swipeRefresh.isRefreshing = true
         lifecycleScope.launch {
-            val users = UserRepository.listUsers()
+            users = UserRepository.listUsers()
             adapter.submit(users)
-            binding.emptyView.visibility = if (users.isEmpty()) android.view.View.VISIBLE
-            else android.view.View.GONE
+            binding.emptyView.visibility = if (users.isEmpty()) View.VISIBLE else View.GONE
             binding.swipeRefresh.isRefreshing = false
             syncShortcuts(users)
+        }
+    }
+
+    /** The picked packages can go into several users at once — user 0 already has them. */
+    private fun pickTargetUsers(packages: List<String>) {
+        val targets = users.filter { it.type != UserType.PRIMARY }
+        if (targets.isEmpty()) {
+            toast(getString(R.string.no_target_users))
+            return
+        }
+        val labels = targets.map { "${it.label} · ${it.type.name}" }.toTypedArray()
+        val checked = BooleanArray(targets.size)
+        MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.clone_into_users_title, packages.size))
+            .setMultiChoiceItems(labels, checked) { _, index, isChecked -> checked[index] = isChecked }
+            .setPositiveButton(R.string.clone) { _, _ ->
+                cloneInto(targets.filterIndexed { index, _ -> checked[index] }, packages)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun cloneInto(targets: List<DeviceUser>, packages: List<String>) {
+        if (targets.isEmpty()) return
+        binding.swipeRefresh.isRefreshing = true
+        lifecycleScope.launch {
+            val failures = mutableListOf<String>()
+            var done = 0
+            targets.forEach { user ->
+                val installed = AppRepository.appsFor(user.id).map { it.packageName }.toSet()
+                packages.filter { it !in installed }.forEach { pkg ->
+                    val result = AppRepository.install(user.id, pkg)
+                    if (result.success) done++
+                    else failures.add("${user.label} · $pkg: ${DeviceErrors.explain(result)}")
+                }
+            }
+            binding.swipeRefresh.isRefreshing = false
+            if (failures.isEmpty()) {
+                toast(getString(R.string.clone_done, done))
+            } else {
+                MaterialAlertDialogBuilder(this@MainActivity)
+                    .setTitle(R.string.clone_failed_title)
+                    .setMessage(failures.joinToString("\n\n"))
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show()
+            }
         }
     }
 
@@ -94,4 +155,6 @@ class MainActivity : BaseActivity() {
             .associate { user -> user.id to AppRepository.appsFor(user.id).map { it.packageName }.toSet() }
         ShortcutRepository.sync(this, users, appsByUser)
     }
+
+    private fun toast(message: String) = Toast.makeText(this, message, Toast.LENGTH_LONG).show()
 }
