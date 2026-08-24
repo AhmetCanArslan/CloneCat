@@ -7,7 +7,7 @@
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/folderCard"
-        android:layout_width="256dp"
+        android:layout_width="288dp"
         android:layout_height="500dp"
         android:layout_gravity="center"
         app:cardBackgroundColor="@color/folder_surface"
