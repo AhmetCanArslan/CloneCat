@@ -40,15 +40,11 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/launchButton"
-        style="@style/Widget.Material3.Button.TextButton"
+        style="@style/Widget.Material3.Button.IconButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:minWidth="0dp"
-        android:paddingStart="10dp"
-        android:paddingEnd="10dp"
-        android:insetLeft="0dp"
-        android:insetRight="0dp"
-        android:text="@string/launch" />
+        android:contentDescription="@string/launch"
+        app:icon="@drawable/ic_picon_play_arrow" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/pinButton"
@@ -67,13 +63,9 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/removeButton"
-        style="@style/Widget.Material3.Button.TextButton"
+        style="@style/Widget.Material3.Button.IconButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:minWidth="0dp"
-        android:paddingStart="10dp"
-        android:paddingEnd="10dp"
-        android:insetLeft="0dp"
-        android:insetRight="0dp"
-        android:text="@string/remove" />
+        android:contentDescription="@string/remove"
+        app:icon="@drawable/ic_picon_delete" />
 </LinearLayout>
