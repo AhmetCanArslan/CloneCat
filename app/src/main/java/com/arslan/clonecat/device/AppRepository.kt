@@ -157,8 +157,36 @@ object AppRepository {
         }.distinctBy { it.packageName }.sortedBy { it.packageName }
     }
 
-    suspend fun install(userId: Int, pkg: String): ShellResult =
-        Device.run(AdbCommandBuilder.installExisting(userId, pkg))
+    suspend fun install(userId: Int, pkg: String): ShellResult {
+        val existing = Device.run(AdbCommandBuilder.installExisting(userId, pkg))
+        if (existing.success && !existing.output.contains("Failure", ignoreCase = true)) return existing
+        return sessionInstall(userId, pkg) ?: existing
+    }
+
+    private suspend fun sessionInstall(userId: Int, pkg: String): ShellResult? {
+        val paths = Device.run(AdbCommandBuilder.apkPath(0, pkg))
+            .stdout
+            .lineSequence()
+            .filter { it.startsWith("package:") }
+            .map { it.removePrefix("package:").trim() }
+            .filter { it.endsWith(".apk") }
+            .toList()
+        if (paths.isEmpty()) return null
+
+        val create = Device.run(AdbCommandBuilder.installCreate(userId, pkg))
+        val sessionId = Regex("\\[(\\d+)]").find(create.stdout)?.groupValues?.get(1) ?: return null
+
+        paths.forEachIndexed { index, path ->
+            val name = path.substringAfterLast('/').removeSuffix(".apk").ifBlank { "split$index" }
+            val write = Device.run(AdbCommandBuilder.installWrite(sessionId, name, path))
+            if (!write.success) {
+                Device.run(AdbCommandBuilder.installAbandon(sessionId))
+                return write
+            }
+        }
+
+        return Device.run(AdbCommandBuilder.installCommit(sessionId))
+    }
 
     suspend fun uninstall(userId: Int, pkg: String): ShellResult =
         Device.run(AdbCommandBuilder.uninstall(userId, pkg))

@@ -9,7 +9,8 @@ object DeviceErrors {
         val lower = text.lowercase()
         return when {
             lower.contains("unable to install on cloned user") ->
-                "This ROM refuses `install-existing` for third-party apps in a clone user. " +
+                "This ROM refuses `install-existing` for third-party apps in a clone user, " +
+                    "and the APK session install fell through too. " +
                     "Use the OEM Dual Apps screen for this package."
             lower.contains("not running") || lower.contains("not unlocked") ->
                 "Target user is stopped or locked. Start or unlock it first."

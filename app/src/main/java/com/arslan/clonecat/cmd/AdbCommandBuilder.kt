@@ -27,6 +27,22 @@ object AdbCommandBuilder {
     fun uninstall(userId: Int, pkg: String) =
         DeviceCommand("pm uninstall --user $userId $pkg", "Remove $pkg from user $userId")
 
+    fun installCreate(userId: Int, pkg: String) = DeviceCommand(
+        "pm install-create --user $userId -r -t -d -i com.android.vending",
+        "Create install session for $pkg in user $userId"
+    )
+
+    fun installWrite(sessionId: String, splitName: String, path: String) = DeviceCommand(
+        "pm install-write $sessionId $splitName $path",
+        "Write $splitName into session $sessionId"
+    )
+
+    fun installCommit(sessionId: String) =
+        DeviceCommand("pm install-commit $sessionId", "Commit session $sessionId")
+
+    fun installAbandon(sessionId: String) =
+        DeviceCommand("pm install-abandon $sessionId", "Abandon session $sessionId")
+
     fun apkPath(userId: Int, pkg: String) =
         DeviceCommand("pm path --user $userId $pkg", "APK path of $pkg")
 
