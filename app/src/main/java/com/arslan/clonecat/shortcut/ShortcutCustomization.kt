@@ -32,8 +32,10 @@ object ShortcutCustomization {
     fun saveIcon(context: Context, id: String, drawable: android.graphics.drawable.Drawable): Boolean = runCatching {
         val size = 512
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val saved = android.graphics.Rect(drawable.bounds)
         drawable.setBounds(0, 0, size, size)
         drawable.draw(android.graphics.Canvas(bitmap))
+        drawable.bounds = saved
         val file = File(dir(context), id.replace(Regex("[^A-Za-z0-9]"), "_") + ".png")
         file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
         true

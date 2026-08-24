@@ -7,6 +7,7 @@ import android.content.pm.ShortcutManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.drawable.AdaptiveIconDrawable
@@ -101,13 +102,17 @@ object ShortcutIcon {
     private fun fullBleed(drawable: AdaptiveIconDrawable, size: Int): Bitmap {
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
-        drawable.background?.apply {
-            setBounds(0, 0, size, size)
-            draw(canvas)
+        drawable.background?.let { layer ->
+            val saved = Rect(layer.bounds)
+            layer.setBounds(0, 0, size, size)
+            layer.draw(canvas)
+            layer.bounds = saved
         }
-        drawable.foreground?.apply {
-            setBounds(0, 0, size, size)
-            draw(canvas)
+        drawable.foreground?.let { layer ->
+            val saved = Rect(layer.bounds)
+            layer.setBounds(0, 0, size, size)
+            layer.draw(canvas)
+            layer.bounds = saved
         }
         return bitmap
     }
@@ -119,8 +124,10 @@ object ShortcutIcon {
             isFilterBitmap = true
             isAntiAlias = true
         }
+        val saved = Rect(drawable.bounds)
         drawable.setBounds(0, 0, size, size)
         drawable.draw(canvas)
+        drawable.bounds = saved
         return bitmap
     }
 
