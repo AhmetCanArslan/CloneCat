@@ -89,8 +89,11 @@ class UserDetailActivity : BaseActivity() {
                 render()
             }
         })
+        showSystem = UiPrefs.showSystem(this)
+        binding.systemChip.isChecked = showSystem
         binding.systemChip.setOnCheckedChangeListener { _, checked ->
             showSystem = checked
+            UiPrefs.setShowSystem(this, checked)
             render()
         }
         binding.cloneFab.setOnClickListener { openClonePicker() }
