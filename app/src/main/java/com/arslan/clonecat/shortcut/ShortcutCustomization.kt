@@ -3,8 +3,6 @@ package com.arslan.clonecat.shortcut
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.ImageDecoder
-import android.net.Uri
 import java.io.File
 
 object ShortcutCustomization {
@@ -24,16 +22,13 @@ object ShortcutCustomization {
     fun iconFile(context: Context, id: String): File? =
         File(dir(context), id.replace(Regex("[^A-Za-z0-9]"), "_") + ".png").takeIf { it.exists() }
 
-    fun saveIcon(context: Context, id: String, uri: Uri): Boolean = runCatching {
-        val source = ImageDecoder.createSource(context.contentResolver, uri)
-        val bitmap = ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
-            decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-            decoder.isMutableRequired = true
-        }
+    fun saveIcon(context: Context, id: String, drawable: android.graphics.drawable.Drawable): Boolean = runCatching {
         val size = 512
-        val scaled = Bitmap.createScaledBitmap(bitmap, size, size, true)
+        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        drawable.setBounds(0, 0, size, size)
+        drawable.draw(android.graphics.Canvas(bitmap))
         val file = File(dir(context), id.replace(Regex("[^A-Za-z0-9]"), "_") + ".png")
-        file.outputStream().use { scaled.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
         true
     }.getOrDefault(false)
 
