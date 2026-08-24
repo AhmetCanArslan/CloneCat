@@ -32,6 +32,26 @@ object ShortcutCustomization {
         true
     }.getOrDefault(false)
 
+    fun glyphBitmap(context: Context, res: Int, color: Int): Bitmap {
+        val size = 512
+        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val canvas = android.graphics.Canvas(bitmap)
+        canvas.drawColor(color)
+        androidx.core.content.ContextCompat.getDrawable(context, res)?.apply {
+            setTint(0xFFFFFFFF.toInt())
+            val inset = (size * 0.28f).toInt()
+            setBounds(inset, inset, size - inset, size - inset)
+            draw(canvas)
+        }
+        return bitmap
+    }
+
+    fun saveBitmap(context: Context, id: String, bitmap: Bitmap): Boolean = runCatching {
+        val file = File(dir(context), id.replace(Regex("[^A-Za-z0-9]"), "_") + ".png")
+        file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        true
+    }.getOrDefault(false)
+
     fun iconBitmap(context: Context, id: String): Bitmap? =
         iconFile(context, id)?.let { BitmapFactory.decodeFile(it.path) }
 
