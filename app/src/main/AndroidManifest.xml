@@ -42,7 +42,7 @@
         <activity
             android:name=".ui.UserAppsActivity"
             android:exported="false"
-            android:launchMode="singleTop"
+            android:documentLaunchMode="intoExisting"
             android:taskAffinity="" />
 
         <activity

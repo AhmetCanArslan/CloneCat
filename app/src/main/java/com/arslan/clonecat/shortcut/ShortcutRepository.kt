@@ -92,7 +92,7 @@ object ShortcutRepository {
             action = Intent.ACTION_VIEW
             `package` = context.packageName
             data = android.net.Uri.parse("clonecat://user/${user.id}")
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
             putExtra(UserAppsActivity.EXTRA_USER_ID, user.id)
             putExtra(UserAppsActivity.EXTRA_USER_NAME, user.label)
             putExtra(UserAppsActivity.EXTRA_USER_TYPE, user.type.name)
