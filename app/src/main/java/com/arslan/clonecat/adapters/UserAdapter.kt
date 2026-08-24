@@ -10,7 +10,7 @@ import com.arslan.clonecat.shortcut.ShortcutIcon
 
 class UserAdapter(
     private val onClick: (DeviceUser) -> Unit,
-    private val onPinFolder: (DeviceUser) -> Unit = {}
+    private val onPinScreen: (DeviceUser) -> Unit = {}
 ) : RecyclerView.Adapter<UserAdapter.Holder>() {
 
     private val users = mutableListOf<DeviceUser>()
@@ -42,7 +42,7 @@ class UserAdapter(
         holder.binding.typeChip.text = user.type.name
         holder.binding.typeChip.chipBackgroundColor =
             android.content.res.ColorStateList.valueOf(ShortcutIcon.colorFor(user.type))
-        holder.binding.folderButton.setOnClickListener { onPinFolder(user) }
+        holder.binding.pinScreenButton.setOnClickListener { onPinScreen(user) }
         holder.itemView.setOnClickListener { onClick(user) }
     }
 }

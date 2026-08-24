@@ -7,7 +7,7 @@ import android.content.pm.ShortcutManager
 import com.arslan.clonecat.device.AppRepository
 import com.arslan.clonecat.device.DeviceUser
 import com.arslan.clonecat.device.UserType
-import com.arslan.clonecat.ui.FolderActivity
+import com.arslan.clonecat.ui.UserAppsActivity
 import com.arslan.clonecat.ui.LaunchProxyActivity
 
 object ShortcutRepository {
@@ -17,7 +17,7 @@ object ShortcutRepository {
 
     fun idFor(userId: Int, pkg: String) = "u$userId:$pkg"
 
-    fun folderIdFor(userId: Int) = "f$userId"
+    fun screenIdFor(userId: Int) = "f$userId"
 
     fun isSupported(context: Context): Boolean =
         context.getSystemService(ShortcutManager::class.java)?.isRequestPinShortcutSupported == true
@@ -40,11 +40,11 @@ object ShortcutRepository {
         return requested
     }
 
-    suspend fun pinFolder(context: Context, user: DeviceUser): Boolean {
+    suspend fun pinUserScreen(context: Context, user: DeviceUser): Boolean {
         val manager = context.getSystemService(ShortcutManager::class.java) ?: return false
         if (!manager.isRequestPinShortcutSupported) return false
 
-        val shortcut = buildFolder(context, user)
+        val shortcut = buildUserScreen(context, user)
         if (isPinned(manager, shortcut.id)) {
             return runCatching { manager.updateShortcuts(listOf(shortcut)); true }.getOrDefault(false)
         }
@@ -86,23 +86,23 @@ object ShortcutRepository {
             .build()
     }
 
-    suspend fun buildFolder(context: Context, user: DeviceUser): ShortcutInfo {
-        val intent = Intent(context, FolderActivity::class.java).apply {
+    suspend fun buildUserScreen(context: Context, user: DeviceUser): ShortcutInfo {
+        val intent = Intent(context, UserAppsActivity::class.java).apply {
             action = Intent.ACTION_VIEW
             `package` = context.packageName
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            putExtra(FolderActivity.EXTRA_USER_ID, user.id)
-            putExtra(FolderActivity.EXTRA_USER_NAME, user.label)
-            putExtra(FolderActivity.EXTRA_USER_TYPE, user.type.name)
+            putExtra(UserAppsActivity.EXTRA_USER_ID, user.id)
+            putExtra(UserAppsActivity.EXTRA_USER_NAME, user.label)
+            putExtra(UserAppsActivity.EXTRA_USER_TYPE, user.type.name)
         }
 
-        val id = folderIdFor(user.id)
+        val id = screenIdFor(user.id)
         val label = ShortcutCustomization.name(context, id) ?: user.label
 
         return ShortcutInfo.Builder(context, id)
             .setShortLabel(label)
-            .setLongLabel(context.getString(com.arslan.clonecat.R.string.folder_long_label, label))
-            .setIcon(ShortcutIcon.custom(context, id) ?: ShortcutIcon.folder(context, user.type))
+            .setLongLabel(context.getString(com.arslan.clonecat.R.string.user_apps_long_label, label))
+            .setIcon(ShortcutIcon.custom(context, id) ?: ShortcutIcon.userScreen(context, user.type))
             .setIntent(intent)
             .build()
     }
@@ -120,7 +120,7 @@ object ShortcutRepository {
             if (id.startsWith("f")) {
                 val userId = id.removePrefix("f").toIntOrNull()
                 val user = userId?.let { usersById[it] }
-                if (user == null) stale.add(id) else alive.add(buildFolder(context, user))
+                if (user == null) stale.add(id) else alive.add(buildUserScreen(context, user))
                 return@forEach
             }
             val userId = id.removePrefix("u").substringBefore(':').toIntOrNull()

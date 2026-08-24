@@ -40,11 +40,10 @@
     <string name="shortcut_pick_icon">Choose icon</string>
     <string name="shortcut_reset">Reset</string>
     <string name="pin_unsupported">This launcher does not support pinned shortcuts.</string>
-    <string name="action_pin_folder">Add app folder to Home</string>
-    <string name="pin_folder_requested">Folder shortcut requested — confirm it on the home screen.</string>
-    <string name="folder_long_label">%1$s apps</string>
-    <string name="folder_no_apps">No apps installed in this user.</string>
-    <string name="system_short">System</string>
+    <string name="action_pin_user_apps">Add apps screen to Home</string>
+    <string name="pin_user_apps_requested">Shortcut requested — confirm it on the home screen.</string>
+    <string name="user_apps_long_label">%1$s apps</string>
+    <string name="user_apps_empty">No apps installed in this user.</string>
     <string name="shortcut_stale">The target user or app no longer exists.</string>
     <string name="no_launcher_activity">No MAIN/LAUNCHER activity found for this app.</string>
 

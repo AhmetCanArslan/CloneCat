@@ -1,17 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.CloneCat" parent="Theme.Material3.DayNight.NoActionBar" />
-
-    <style name="Theme.CloneCat.Folder">
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:backgroundDimEnabled">false</item>
-        <item name="android:windowContentOverlay">@null</item>
-        <item name="android:windowAnimationStyle">@style/Animation.CloneCat.Folder</item>
-    </style>
-
-    <style name="Animation.CloneCat.Folder" parent="@android:style/Animation.Dialog">
-        <item name="android:windowEnterAnimation">@anim/folder_enter</item>
-        <item name="android:windowExitAnimation">@null</item>
-    </style>
 </resources>

@@ -3,13 +3,13 @@ package com.arslan.clonecat.adapters
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.arslan.clonecat.databinding.ItemFolderAppBinding
+import com.arslan.clonecat.databinding.ItemAppGridBinding
 import com.arslan.clonecat.device.AppEntry
 
-class FolderAdapter(
+class AppGridAdapter(
     private val bindAsync: (AppEntry, (AppAdapter.AppMetadata) -> Unit) -> Unit,
-    private val onClick: (AppEntry, android.view.View) -> Unit
-) : RecyclerView.Adapter<FolderAdapter.Holder>() {
+    private val onClick: (AppEntry) -> Unit
+) : RecyclerView.Adapter<AppGridAdapter.Holder>() {
 
     private val apps = mutableListOf<AppEntry>()
 
@@ -19,10 +19,10 @@ class FolderAdapter(
         notifyDataSetChanged()
     }
 
-    class Holder(val binding: ItemFolderAppBinding) : RecyclerView.ViewHolder(binding.root)
+    class Holder(val binding: ItemAppGridBinding) : RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = Holder(
-        ItemFolderAppBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        ItemAppGridBinding.inflate(LayoutInflater.from(parent.context), parent, false)
     )
 
     override fun getItemCount() = apps.size
@@ -39,6 +39,6 @@ class FolderAdapter(
             holder.binding.appIcon.setImageDrawable(meta.icon)
         }
 
-        holder.itemView.setOnClickListener { onClick(app, holder.itemView) }
+        holder.itemView.setOnClickListener { onClick(app) }
     }
 }

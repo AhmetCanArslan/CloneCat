@@ -40,12 +40,8 @@
             android:parentActivityName=".ui.MainActivity" />
 
         <activity
-            android:name=".ui.FolderActivity"
+            android:name=".ui.UserAppsActivity"
             android:exported="false"
-            android:theme="@style/Theme.CloneCat.Folder"
-            android:excludeFromRecents="true"
-            android:autoRemoveFromRecents="true"
-            android:noHistory="true"
             android:taskAffinity="" />
 
         <activity

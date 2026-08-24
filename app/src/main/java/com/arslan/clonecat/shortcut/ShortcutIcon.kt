@@ -40,13 +40,13 @@ object ShortcutIcon {
     fun custom(context: Context, id: String): Icon? =
         ShortcutCustomization.iconBitmap(context, id)?.let { Icon.createWithAdaptiveBitmap(it) }
 
-    fun folder(context: Context, type: UserType): Icon {
+    fun userScreen(context: Context, type: UserType): Icon {
         val size = iconSize(context)
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         canvas.drawColor(colorFor(type))
 
-        val glyph = androidx.core.content.ContextCompat.getDrawable(context, R.drawable.ic_folder)
+        val glyph = androidx.core.content.ContextCompat.getDrawable(context, R.drawable.ic_apps_grid)
             ?.apply { setTint(0xFFFFFFFF.toInt()) } ?: return Icon.createWithBitmap(bitmap)
         val inset = (size * 0.3f).toInt()
         glyph.setBounds(inset, inset, size - inset, size - inset)
