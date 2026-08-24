@@ -61,6 +61,8 @@ class FolderActivity : BaseActivity() {
 
         pagesAdapter = PagesAdapter()
         binding.appPager.adapter = pagesAdapter
+        binding.appPager.offscreenPageLimit = 1
+        (binding.appPager.getChildAt(0) as? RecyclerView)?.setItemViewCacheSize(PAGE_SIZE)
         binding.appPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) = highlightDot(position)
         })
@@ -74,7 +76,8 @@ class FolderActivity : BaseActivity() {
         onBackPressedDispatcher.addCallback(this) { closeFolder() }
         binding.folderCard.alpha = 0f
 
-        snapshots[userId]?.let { cached ->
+        val cached = snapshots[userId] ?: AppRepository.fastApps(this, userId)
+        if (cached.isNotEmpty()) {
             allApps = cached
             render()
         }
@@ -199,6 +202,7 @@ class FolderActivity : BaseActivity() {
 
     private fun render() {
         val apps = allApps.filter { showSystem || !it.isSystem }
+        AppRepository.prefetch(applicationContext, apps)
         val pages = apps.chunked(PAGE_SIZE)
         pagesAdapter.submit(pages)
 
@@ -279,22 +283,29 @@ class FolderActivity : BaseActivity() {
             notifyDataSetChanged()
         }
 
+        private val iconPool = RecyclerView.RecycledViewPool()
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PageHolder {
             val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.item_folder_page, parent, false)
-            return PageHolder(view as RecyclerView)
+                .inflate(R.layout.item_folder_page, parent, false) as RecyclerView
+            view.layoutManager = GridLayoutManager(view.context, COLUMNS)
+            view.setRecycledViewPool(iconPool)
+            view.setHasFixedSize(true)
+            val adapter = FolderAdapter(
+                bindAsync = { app, apply -> bindApp(app, apply) },
+                onClick = { app, anchor -> launch(app, anchor) }
+            )
+            view.adapter = adapter
+            return PageHolder(view, adapter)
         }
 
         override fun getItemCount() = pages.size
 
         override fun onBindViewHolder(holder: PageHolder, position: Int) {
-            holder.grid.layoutManager = GridLayoutManager(holder.grid.context, COLUMNS)
-            holder.grid.adapter = FolderAdapter(
-                bindAsync = { app, apply -> bindApp(app, apply) },
-                onClick = { app, view -> launch(app, view) }
-            ).apply { submit(pages[position]) }
+            holder.adapter.submit(pages[position])
         }
     }
 
-    class PageHolder(val grid: RecyclerView) : RecyclerView.ViewHolder(grid)
+    class PageHolder(val grid: RecyclerView, val adapter: FolderAdapter) :
+        RecyclerView.ViewHolder(grid)
 }

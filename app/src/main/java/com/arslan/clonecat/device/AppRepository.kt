@@ -8,7 +8,13 @@ import android.graphics.drawable.Drawable
 import android.util.LruCache
 import com.arslan.clonecat.cmd.AdbCommandBuilder
 import com.arslan.clonecat.shell.ShellResult
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 data class AppEntry(
@@ -35,6 +41,10 @@ object AppRepository {
 
     private val labelCache = LruCache<String, String>(512)
     private val iconCache = LruCache<String, Drawable>(512)
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val labelJobs = mutableMapOf<String, Deferred<String>>()
+    private val iconJobs = mutableMapOf<String, Deferred<Drawable?>>()
 
     suspend fun appsFor(userId: Int): List<AppEntry> {
         val results = Device.runAll(
@@ -128,6 +138,25 @@ object AppRepository {
         return byUser
     }
 
+    fun fastApps(caller: Context, userId: Int): List<AppEntry> {
+        val context = caller.applicationContext
+        val handle = UserHandle.getUserHandleForUid(userId * PER_USER_RANGE)
+        val activities = try {
+            context.getSystemService(LauncherApps::class.java)
+                ?.getActivityList(null, handle)
+                .orEmpty()
+        } catch (_: Throwable) {
+            emptyList()
+        }
+
+        return activities.map { info ->
+            val pkg = info.applicationInfo.packageName
+            val key = "$userId:$pkg"
+            if (labelCache.get(key) == null) labelCache.put(key, info.label.toString())
+            AppEntry(userId, pkg, info.applicationInfo.uid, isSystem = false)
+        }.distinctBy { it.packageName }.sortedBy { it.packageName }
+    }
+
     suspend fun install(userId: Int, pkg: String): ShellResult =
         Device.run(AdbCommandBuilder.installExisting(userId, pkg))
 
@@ -154,25 +183,57 @@ object AppRepository {
         .mapNotNull { line -> COMPONENT.find(line.trim())?.value }
         .firstOrNull { it.substringBefore('/') == pkg }
 
-    suspend fun label(context: Context, userId: Int, pkg: String): String {
-        labelCache.get(pkg)?.let { return it }
-        val info = archiveInfo(context, userId, pkg)
-        val label = info?.applicationInfo?.loadLabel(context.packageManager)?.toString()
-            ?: userZeroLabel(context, pkg)
-            ?: pkg
-        labelCache.put(pkg, label)
-        return label
+    suspend fun label(caller: Context, userId: Int, pkg: String): String {
+        val context = caller.applicationContext
+        val key = "$userId:$pkg"
+        labelCache.get(key)?.let { return it }
+        val job = synchronized(labelJobs) {
+            labelJobs.getOrPut(key) {
+                scope.async {
+                    val label = userZeroLabel(context, pkg)
+                        ?: archiveInfo(context, userId, pkg)
+                            ?.applicationInfo?.loadLabel(context.packageManager)?.toString()
+                        ?: pkg
+                    labelCache.put(key, label)
+                    synchronized(labelJobs) { labelJobs.remove(key) }
+                    label
+                }
+            }
+        }
+        return job.await()
     }
 
-    suspend fun icon(context: Context, userId: Int, pkg: String): Drawable? {
-        iconCache.get(pkg)?.let { return it }
-        val pm = context.packageManager
-        val icon = userZeroIcon(context, pkg)
-            ?: archiveInfo(context, userId, pkg)?.applicationInfo?.loadIcon(pm)
-            ?: launcherIcon(context, userId, pkg)
-            ?: pm.getDefaultActivityIcon()
-        iconCache.put(pkg, icon)
-        return icon
+    suspend fun icon(caller: Context, userId: Int, pkg: String): Drawable? {
+        val context = caller.applicationContext
+        val key = "$userId:$pkg"
+        iconCache.get(key)?.let { return it }
+        val job = synchronized(iconJobs) {
+            iconJobs.getOrPut(key) {
+                scope.async {
+                    val pm = context.packageManager
+                    val icon = userZeroIcon(context, pkg)
+                        ?: archiveInfo(context, userId, pkg)?.applicationInfo?.loadIcon(pm)
+                        ?: launcherIcon(context, userId, pkg)
+                        ?: pm.getDefaultActivityIcon()
+                    iconCache.put(key, icon)
+                    synchronized(iconJobs) { iconJobs.remove(key) }
+                    icon
+                }
+            }
+        }
+        return job.await()
+    }
+
+    private var prefetchJob: Job? = null
+
+    fun prefetch(context: Context, apps: List<AppEntry>) {
+        prefetchJob?.cancel()
+        prefetchJob = scope.launch {
+            apps.forEach { app ->
+                label(context, app.userId, app.packageName)
+                icon(context, app.userId, app.packageName)
+            }
+        }
     }
 
     private fun launcherIcon(context: Context, userId: Int, pkg: String): Drawable? = try {
