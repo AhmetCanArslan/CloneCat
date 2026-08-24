@@ -54,9 +54,13 @@ class MainActivity : BaseActivity() {
                 )
             },
             onPinFolder = { user ->
-                lifecycleScope.launch {
-                    val ok = ShortcutRepository.pinFolder(this@MainActivity, user)
-                    toast(getString(if (ok) R.string.pin_folder_requested else R.string.pin_unsupported))
+                val id = ShortcutRepository.folderIdFor(user.id)
+                val icon = androidx.core.content.ContextCompat.getDrawable(this, R.drawable.ic_folder)
+                editShortcut(id, user.label, icon) {
+                    lifecycleScope.launch {
+                        val ok = ShortcutRepository.pinFolder(this@MainActivity, user)
+                        toast(getString(if (ok) R.string.pin_folder_requested else R.string.pin_unsupported))
+                    }
                 }
             }
         )

@@ -32,6 +32,9 @@ object ShortcutRepository {
         if (!manager.isRequestPinShortcutSupported) return false
 
         val shortcut = build(context, user, pkg, component)
+        if (isPinned(manager, shortcut.id)) {
+            return runCatching { manager.updateShortcuts(listOf(shortcut)); true }.getOrDefault(false)
+        }
         val requested = runCatching { manager.requestPinShortcut(shortcut, null) }.getOrDefault(false)
         if (requested) remember(context, shortcut.id)
         return requested
@@ -42,6 +45,9 @@ object ShortcutRepository {
         if (!manager.isRequestPinShortcutSupported) return false
 
         val shortcut = buildFolder(context, user)
+        if (isPinned(manager, shortcut.id)) {
+            return runCatching { manager.updateShortcuts(listOf(shortcut)); true }.getOrDefault(false)
+        }
         val requested = runCatching { manager.requestPinShortcut(shortcut, null) }.getOrDefault(false)
         if (requested) remember(context, shortcut.id)
         return requested
@@ -54,7 +60,8 @@ object ShortcutRepository {
         component: String?
     ): ShortcutInfo {
         val id = idFor(user.id, pkg)
-        val label = AppRepository.label(context, user.id, pkg)
+        val label = ShortcutCustomization.name(context, id)
+            ?: AppRepository.label(context, user.id, pkg)
         val icon = AppRepository.icon(context, user.id, pkg)
         val target = component ?: rememberedComponent(context, id)
         if (target != null) prefs(context).edit().putString("comp:$id", target).apply()
@@ -74,7 +81,7 @@ object ShortcutRepository {
         return ShortcutInfo.Builder(context, id)
             .setShortLabel(label)
             .setLongLabel("$label · ${user.label}")
-            .setIcon(ShortcutIcon.of(context, pkg, icon))
+            .setIcon(ShortcutIcon.custom(context, id) ?: ShortcutIcon.of(context, pkg, icon))
             .setIntent(intent)
             .build()
     }
@@ -89,10 +96,13 @@ object ShortcutRepository {
             putExtra(FolderActivity.EXTRA_USER_TYPE, user.type.name)
         }
 
-        return ShortcutInfo.Builder(context, folderIdFor(user.id))
-            .setShortLabel(user.label)
-            .setLongLabel(context.getString(com.arslan.clonecat.R.string.folder_long_label, user.label))
-            .setIcon(ShortcutIcon.folder(context, user.type))
+        val id = folderIdFor(user.id)
+        val label = ShortcutCustomization.name(context, id) ?: user.label
+
+        return ShortcutInfo.Builder(context, id)
+            .setShortLabel(label)
+            .setLongLabel(context.getString(com.arslan.clonecat.R.string.folder_long_label, label))
+            .setIcon(ShortcutIcon.custom(context, id) ?: ShortcutIcon.folder(context, user.type))
             .setIntent(intent)
             .build()
     }
@@ -132,6 +142,9 @@ object ShortcutRepository {
         }
     }
 
+    private fun isPinned(manager: ShortcutManager, id: String): Boolean =
+        runCatching { manager.pinnedShortcuts.any { it.id == id && it.isEnabled } }.getOrDefault(false)
+
     private fun rememberedComponent(context: Context, id: String): String? =
         prefs(context).getString("comp:$id", null)
 
@@ -150,6 +163,7 @@ object ShortcutRepository {
             removed.forEach { remove("comp:$it") }
             apply()
         }
+        removed.forEach { ShortcutCustomization.clear(context, it) }
     }
 
     fun typeOf(name: String?): UserType =

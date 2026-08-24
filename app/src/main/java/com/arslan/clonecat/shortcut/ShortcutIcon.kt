@@ -37,6 +37,9 @@ object ShortcutIcon {
         }
     }
 
+    fun custom(context: Context, id: String): Icon? =
+        ShortcutCustomization.iconBitmap(context, id)?.let { Icon.createWithAdaptiveBitmap(it) }
+
     fun folder(context: Context, type: UserType): Icon {
         val size = iconSize(context)
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)

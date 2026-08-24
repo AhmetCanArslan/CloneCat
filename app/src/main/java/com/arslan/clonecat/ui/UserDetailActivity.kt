@@ -175,8 +175,14 @@ class UserDetailActivity : BaseActivity() {
                 toast(getString(R.string.no_launcher_activity))
                 return@launch
             }
-            if (!ShortcutRepository.pin(this@UserDetailActivity, user, app.packageName, component)) {
-                toast(getString(R.string.pin_unsupported))
+            val id = ShortcutRepository.idFor(user.id, app.packageName)
+            val label = AppRepository.label(this@UserDetailActivity, user.id, app.packageName)
+            val icon = AppRepository.icon(this@UserDetailActivity, user.id, app.packageName)
+            editShortcut(id, label, icon) {
+                lifecycleScope.launch {
+                    val ok = ShortcutRepository.pin(this@UserDetailActivity, user, app.packageName, component)
+                    toast(getString(if (ok) R.string.pin_requested else R.string.pin_unsupported))
+                }
             }
         }
     }

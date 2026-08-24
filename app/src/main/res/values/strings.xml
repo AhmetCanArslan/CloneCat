@@ -34,6 +34,11 @@
     <string name="pin_all_title">Pin shortcuts</string>
     <string name="pin_all_message">Pin a home-screen shortcut for %1$d apps? The launcher asks once per app.</string>
     <string name="pin_all_done">Requested %1$d shortcut(s).</string>
+    <string name="pin_requested">Shortcut saved — confirm it on the home screen if asked.</string>
+    <string name="shortcut_edit_title">Shortcut</string>
+    <string name="shortcut_name_hint">Shortcut name</string>
+    <string name="shortcut_pick_icon">Choose icon</string>
+    <string name="shortcut_reset">Reset</string>
     <string name="pin_unsupported">This launcher does not support pinned shortcuts.</string>
     <string name="action_pin_folder">Add app folder to Home</string>
     <string name="pin_folder_requested">Folder shortcut requested — confirm it on the home screen.</string>
