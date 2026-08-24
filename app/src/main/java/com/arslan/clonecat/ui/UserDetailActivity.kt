@@ -79,6 +79,7 @@ class UserDetailActivity : BaseActivity() {
         )
         binding.appList.layoutManager = LinearLayoutManager(this)
         binding.appList.adapter = adapter
+        binding.swipeRefresh.setOnRefreshListener { load() }
 
         binding.searchField.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) = Unit
@@ -107,10 +108,6 @@ class UserDetailActivity : BaseActivity() {
             finish()
             true
         }
-        R.id.action_refresh -> {
-            load()
-            true
-        }
         R.id.action_pin_all -> {
             pinAll()
             true
@@ -135,10 +132,10 @@ class UserDetailActivity : BaseActivity() {
     }
 
     private fun load() {
-        binding.progress.visibility = View.VISIBLE
+        binding.swipeRefresh.isRefreshing = true
         lifecycleScope.launch {
             allApps = AppRepository.appsFor(user.id)
-            binding.progress.visibility = View.GONE
+            binding.swipeRefresh.isRefreshing = false
             render()
         }
     }
@@ -232,14 +229,14 @@ class UserDetailActivity : BaseActivity() {
 
     private fun cloneInto(packages: List<String>) {
         if (packages.isEmpty()) return
-        binding.progress.visibility = View.VISIBLE
+        binding.swipeRefresh.isRefreshing = true
         lifecycleScope.launch {
             val failures = mutableListOf<String>()
             packages.forEach { pkg ->
                 val result = AppRepository.install(user.id, pkg)
                 if (!result.success) failures.add("$pkg: ${DeviceErrors.explain(result)}")
             }
-            binding.progress.visibility = View.GONE
+            binding.swipeRefresh.isRefreshing = false
             if (failures.isEmpty()) {
                 toast(getString(R.string.clone_done, packages.size))
             } else {

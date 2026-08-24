@@ -76,10 +76,6 @@ class MainActivity : BaseActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
-        R.id.action_refresh -> {
-            load()
-            true
-        }
         R.id.action_commands -> {
             CommandsSheet.show(this)
             true
