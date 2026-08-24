@@ -18,6 +18,7 @@ import com.arslan.clonecat.device.AppEntry
 import com.arslan.clonecat.device.AppRepository
 import com.arslan.clonecat.device.DeviceErrors
 import com.arslan.clonecat.device.DeviceUser
+import com.arslan.clonecat.device.PrivateCredentialStore
 import com.arslan.clonecat.device.UserRepository
 import com.arslan.clonecat.device.UserType
 import com.arslan.clonecat.shortcut.ShortcutRepository
@@ -150,6 +151,14 @@ class UserDetailActivity : BaseActivity() {
     private fun launch(app: AppEntry) {
         lifecycleScope.launch {
             if (!user.running) UserRepository.startUser(user.id)
+            if (user.type == UserType.PRIVATE) {
+                val pin = PrivateCredentialStore.get(this@UserDetailActivity)
+                if (!pin.isNullOrBlank()) {
+                    com.arslan.clonecat.device.Device.run(
+                        com.arslan.clonecat.cmd.AdbCommandBuilder.unlockUser(user.id, pin)
+                    )
+                }
+            }
             val component = AppRepository.launcherComponent(this@UserDetailActivity, user.id, app.packageName)
             if (component == null) {
                 toast(getString(R.string.no_launcher_activity))
