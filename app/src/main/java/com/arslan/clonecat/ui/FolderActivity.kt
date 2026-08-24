@@ -11,6 +11,8 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.LinearLayout
+import androidx.activity.addCallback
+import androidx.core.view.doOnLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -46,6 +48,7 @@ class FolderActivity : BaseActivity() {
     private var allApps: List<AppEntry> = emptyList()
     private var showSystem = false
     private var targetBlurPx = 0
+    private var opened = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,12 +71,51 @@ class FolderActivity : BaseActivity() {
         }
         binding.folderCard.setOnClickListener { }
         binding.folderScrim.setOnClickListener { closeFolder() }
+        onBackPressedDispatcher.addCallback(this) { closeFolder() }
+        binding.folderCard.alpha = 0f
 
         snapshots[userId]?.let { cached ->
             allApps = cached
             render()
         }
         load()
+    }
+
+    private fun openFolder() {
+        if (opened) return
+        opened = true
+        val card = binding.folderCard
+        card.doOnLayout {
+            val (pivotX, pivotY) = pivotFor(card, null)
+            card.pivotX = pivotX
+            card.pivotY = pivotY
+            card.scaleX = 0.05f
+            card.scaleY = 0.05f
+            card.animate()
+                .scaleX(1f)
+                .scaleY(1f)
+                .alpha(1f)
+                .setDuration(220L)
+                .setInterpolator(DecelerateInterpolator())
+                .start()
+        }
+    }
+
+    private fun pivotFor(card: View, anchor: View?): Pair<Float, Float> {
+        val cardLoc = IntArray(2).also { card.getLocationOnScreen(it) }
+
+        if (anchor != null && anchor.width > 0) {
+            val anchorLoc = IntArray(2)
+            anchor.getLocationOnScreen(anchorLoc)
+            return (anchorLoc[0] + anchor.width / 2f) - cardLoc[0] to
+                (anchorLoc[1] + anchor.height / 2f) - cardLoc[1]
+        }
+
+        intent.sourceBounds?.let { bounds ->
+            return bounds.exactCenterX() - cardLoc[0] to bounds.exactCenterY() - cardLoc[1]
+        }
+
+        return card.width / 2f to card.height / 2f
     }
 
     private fun closeFolder(anchor: View? = null, onClosed: (() -> Unit)? = null) {
@@ -83,16 +125,7 @@ class FolderActivity : BaseActivity() {
             return
         }
 
-        val cardLoc = IntArray(2).also { card.getLocationOnScreen(it) }
-        var pivotX = card.width / 2f
-        var pivotY = card.height / 2f
-
-        if (anchor != null && anchor.width > 0) {
-            val anchorLoc = IntArray(2)
-            anchor.getLocationOnScreen(anchorLoc)
-            pivotX = (anchorLoc[0] + anchor.width / 2f) - cardLoc[0]
-            pivotY = (anchorLoc[1] + anchor.height / 2f) - cardLoc[1]
-        }
+        val (pivotX, pivotY) = pivotFor(card, anchor)
 
         binding.appPager.isEnabled = false
         binding.folderScrim.isClickable = false
@@ -172,6 +205,7 @@ class FolderActivity : BaseActivity() {
         val empty = apps.isEmpty()
         binding.emptyView.visibility = if (empty) View.VISIBLE else View.GONE
         binding.folderCard.visibility = if (empty) View.GONE else View.VISIBLE
+        if (!empty) openFolder()
         setupDots(pages.size)
     }
 
