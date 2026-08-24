@@ -6,7 +6,9 @@ import android.content.pm.PackageManager
 import android.content.pm.ShortcutManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Matrix
 import android.graphics.Paint
+import android.graphics.Path
 import android.graphics.Rect
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
@@ -59,13 +61,30 @@ object ShortcutIcon {
         return Icon.createWithAdaptiveBitmap(bitmap)
     }
 
+    private fun maskPath(side: Float): Path {
+        val mask = runCatching {
+            AdaptiveIconDrawable(null, null)
+                .apply { setBounds(0, 0, side.toInt(), side.toInt()) }
+                .iconMask
+        }.getOrNull()
+        if (mask == null || mask.isEmpty) {
+            return Path().apply { addCircle(side / 2f, side / 2f, side / 2f, Path.Direction.CW) }
+        }
+        return Path(mask)
+    }
+
     private fun drawRing(bitmap: Bitmap, color: Int) {
         val size = bitmap.width.toFloat()
+        val stroke = size * 0.07f
+        val side = size * 2f / 3f
+        val path = maskPath(side)
+        path.transform(Matrix().apply { setTranslate(size / 6f, size / 6f) })
+
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         paint.style = Paint.Style.STROKE
-        paint.strokeWidth = size * 0.035f
+        paint.strokeWidth = stroke
         paint.color = color
-        Canvas(bitmap).drawCircle(size / 2f, size / 2f, size * 0.30f, paint)
+        Canvas(bitmap).drawPath(path, paint)
     }
 
     fun preview(drawable: Drawable, color: Int?): Bitmap {
@@ -78,10 +97,9 @@ object ShortcutIcon {
         val cropped = Bitmap.createBitmap(base, inset, inset, size - inset * 2, size - inset * 2)
         val out = Bitmap.createBitmap(cropped.width, cropped.height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(out)
-        val radius = cropped.width / 2f
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         paint.color = 0xFF000000.toInt()
-        canvas.drawCircle(radius, radius, radius, paint)
+        canvas.drawPath(maskPath(cropped.width.toFloat()), paint)
         paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
         canvas.drawBitmap(cropped, 0f, 0f, paint)
         return out
