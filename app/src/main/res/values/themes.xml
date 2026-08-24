@@ -12,6 +12,6 @@
 
     <style name="Animation.CloneCat.Folder" parent="@android:style/Animation.Dialog">
         <item name="android:windowEnterAnimation">@anim/folder_enter</item>
-        <item name="android:windowExitAnimation">@anim/folder_exit</item>
+        <item name="android:windowExitAnimation">@null</item>
     </style>
 </resources>

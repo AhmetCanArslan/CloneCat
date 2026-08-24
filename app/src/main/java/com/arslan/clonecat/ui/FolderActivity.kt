@@ -1,5 +1,6 @@
 package com.arslan.clonecat.ui
 
+import android.animation.ValueAnimator
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -8,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.animation.DecelerateInterpolator
 import android.widget.LinearLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
@@ -37,6 +39,8 @@ class FolderActivity : BaseActivity() {
         private const val ROWS = 4
         private const val PAGE_SIZE = COLUMNS * ROWS
 
+        private const val TARGET_DIM = 0.25f
+
         /** Last known app list per user, kept in memory for instant folder open. */
         private val snapshots = mutableMapOf<Int, List<AppEntry>>()
     }
@@ -47,6 +51,7 @@ class FolderActivity : BaseActivity() {
     private var userId = 0
     private var allApps: List<AppEntry> = emptyList()
     private var showSystem = false
+    private var targetBlurPx = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,7 +73,7 @@ class FolderActivity : BaseActivity() {
             render()
         }
         binding.folderCard.setOnClickListener { /* keep open when tapping inside */ }
-        binding.folderScrim.setOnClickListener { finish() }
+        binding.folderScrim.setOnClickListener { closeFolder() }
 
         snapshots[userId]?.let { cached ->
             allApps = cached
@@ -77,16 +82,84 @@ class FolderActivity : BaseActivity() {
         load()
     }
 
+    /** Shrinks the panel into the tapped icon (or its center) before closing. */
+    private fun closeFolder(anchor: View? = null, onClosed: (() -> Unit)? = null) {
+        val card = binding.folderCard
+        if (card.visibility != View.VISIBLE || card.width == 0) {
+            finish()
+            return
+        }
+
+        val cardLoc = IntArray(2).also { card.getLocationOnScreen(it) }
+        var pivotX = card.width / 2f
+        var pivotY = card.height / 2f
+
+        if (anchor != null && anchor.width > 0) {
+            val anchorLoc = IntArray(2)
+            anchor.getLocationOnScreen(anchorLoc)
+            pivotX = (anchorLoc[0] + anchor.width / 2f) - cardLoc[0]
+            pivotY = (anchorLoc[1] + anchor.height / 2f) - cardLoc[1]
+        }
+
+        binding.appPager.isEnabled = false
+        binding.folderScrim.isClickable = false
+        animateScrim(false)
+        card.pivotX = pivotX
+        card.pivotY = pivotY
+        card.animate()
+            .scaleX(0.05f)
+            .scaleY(0.05f)
+            .alpha(0f)
+            .setDuration(200L)
+            .setInterpolator(android.view.animation.DecelerateInterpolator())
+            .withEndAction {
+                onClosed?.invoke()
+                finish()
+            }
+            .start()
+    }
+
     /** Blurs the wallpaper behind the folder window on Android 12+, dim otherwise. */
     private fun applyBlurBehind() {
-        window.setDimAmount(0.25f)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-            window.attributes = window.attributes.apply {
-                blurBehindRadius = (14 * resources.displayMetrics.density).toInt()
+        targetBlurPx =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+                (14 * resources.displayMetrics.density).toInt()
+            } else {
+                window.setBackgroundDrawableResource(android.R.color.transparent)
+                0
             }
-        } else {
-            window.setBackgroundDrawableResource(android.R.color.transparent)
+
+        // Start fully clear, then fade the blur/dim in.
+        window.setDimAmount(0f)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            window.attributes = window.attributes.apply { blurBehindRadius = 0 }
+        }
+        animateScrim(true)
+    }
+
+    /** Fades the background blur and dim together, in on open / out on close. */
+    private fun animateScrim(show: Boolean) {
+        val manager = window
+        val supportsBlur = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+        val fromDim = manager.attributes.dimAmount
+        val toDim = if (show) TARGET_DIM else 0f
+        val fromBlur = if (supportsBlur) manager.attributes.blurBehindRadius.toFloat() else 0f
+        val toBlur = if (show && supportsBlur) targetBlurPx.toFloat() else 0f
+
+        ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = 220L
+            interpolator = DecelerateInterpolator()
+            addUpdateListener { animator ->
+                val fraction = animator.animatedValue as Float
+                val attrs = manager.attributes
+                attrs.dimAmount = fromDim + (toDim - fromDim) * fraction
+                if (supportsBlur) {
+                    attrs.blurBehindRadius = (fromBlur + (toBlur - fromBlur) * fraction).toInt()
+                }
+                manager.attributes = attrs
+            }
+            start()
         }
     }
 
@@ -151,17 +224,25 @@ class FolderActivity : BaseActivity() {
         }
     }
 
-    private fun launch(app: AppEntry) {
-        startActivity(
-            Intent(this, LaunchProxyActivity::class.java).apply {
-                action = LaunchProxyActivity.ACTION_LAUNCH
-                putExtra(LaunchProxyActivity.EXTRA_USER_ID, userId)
-                putExtra(LaunchProxyActivity.EXTRA_PACKAGE, app.packageName)
-                putExtra(LaunchProxyActivity.EXTRA_COMPONENT, "")
-                putExtra(LaunchProxyActivity.EXTRA_USER_TYPE, intent.getStringExtra(EXTRA_USER_TYPE))
-                putExtra(LaunchProxyActivity.EXTRA_USER_LABEL, intent.getStringExtra(EXTRA_USER_NAME))
-            }
-        )
+    private fun launch(app: AppEntry, anchor: View?) {
+        closeFolder(anchor) {
+            startActivity(
+                Intent(this, LaunchProxyActivity::class.java).apply {
+                    action = LaunchProxyActivity.ACTION_LAUNCH
+                    putExtra(LaunchProxyActivity.EXTRA_USER_ID, userId)
+                    putExtra(LaunchProxyActivity.EXTRA_PACKAGE, app.packageName)
+                    putExtra(LaunchProxyActivity.EXTRA_COMPONENT, "")
+                    putExtra(
+                        LaunchProxyActivity.EXTRA_USER_TYPE,
+                        intent.getStringExtra(EXTRA_USER_TYPE)
+                    )
+                    putExtra(
+                        LaunchProxyActivity.EXTRA_USER_LABEL,
+                        intent.getStringExtra(EXTRA_USER_NAME)
+                    )
+                }
+            )
+        }
     }
 
     /** One folder page = one 4x3 grid of apps, swiped horizontally. */
@@ -187,7 +268,7 @@ class FolderActivity : BaseActivity() {
             holder.grid.layoutManager = GridLayoutManager(holder.grid.context, COLUMNS)
             holder.grid.adapter = FolderAdapter(
                 bindAsync = { app, apply -> bindApp(app, apply) },
-                onClick = { app -> launch(app) }
+                onClick = { app, view -> launch(app, view) }
             ).apply { submit(pages[position]) }
         }
     }

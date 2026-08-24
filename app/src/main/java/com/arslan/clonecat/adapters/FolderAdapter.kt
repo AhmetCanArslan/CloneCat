@@ -8,7 +8,7 @@ import com.arslan.clonecat.device.AppEntry
 
 class FolderAdapter(
     private val bindAsync: (AppEntry, (AppAdapter.AppMetadata) -> Unit) -> Unit,
-    private val onClick: (AppEntry) -> Unit
+    private val onClick: (AppEntry, android.view.View) -> Unit
 ) : RecyclerView.Adapter<FolderAdapter.Holder>() {
 
     private val apps = mutableListOf<AppEntry>()
@@ -39,6 +39,6 @@ class FolderAdapter(
             holder.binding.appIcon.setImageDrawable(meta.icon)
         }
 
-        holder.itemView.setOnClickListener { onClick(app) }
+        holder.itemView.setOnClickListener { onClick(app, holder.itemView) }
     }
 }
