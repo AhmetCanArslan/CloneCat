@@ -43,15 +43,23 @@ class MainActivity : BaseActivity() {
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
 
-        adapter = UserAdapter { user ->
-            startActivity(
-                Intent(this, UserDetailActivity::class.java)
-                    .putExtra(UserDetailActivity.EXTRA_USER_ID, user.id)
-                    .putExtra(UserDetailActivity.EXTRA_USER_NAME, user.label)
-                    .putExtra(UserDetailActivity.EXTRA_USER_TYPE, user.type.name)
-                    .putExtra(UserDetailActivity.EXTRA_USER_RUNNING, user.running)
-            )
-        }
+        adapter = UserAdapter(
+            onClick = { user ->
+                startActivity(
+                    Intent(this, UserDetailActivity::class.java)
+                        .putExtra(UserDetailActivity.EXTRA_USER_ID, user.id)
+                        .putExtra(UserDetailActivity.EXTRA_USER_NAME, user.label)
+                        .putExtra(UserDetailActivity.EXTRA_USER_TYPE, user.type.name)
+                        .putExtra(UserDetailActivity.EXTRA_USER_RUNNING, user.running)
+                )
+            },
+            onPinFolder = { user ->
+                lifecycleScope.launch {
+                    val ok = ShortcutRepository.pinFolder(this@MainActivity, user)
+                    toast(getString(if (ok) R.string.pin_folder_requested else R.string.pin_unsupported))
+                }
+            }
+        )
         binding.userList.layoutManager = LinearLayoutManager(this)
         binding.userList.adapter = adapter
         binding.swipeRefresh.setOnRefreshListener { load() }

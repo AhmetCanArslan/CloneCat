@@ -37,6 +37,22 @@ object ShortcutIcon {
         }
     }
 
+    /** Adaptive icon with the user-type color as background and a white folder glyph. */
+    fun folder(context: Context, type: UserType): Icon {
+        val size = iconSize(context)
+        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        canvas.drawColor(colorFor(type))
+
+        val glyph = androidx.core.content.ContextCompat.getDrawable(context, R.drawable.ic_folder)
+            ?.apply { setTint(0xFFFFFFFF.toInt()) } ?: return Icon.createWithBitmap(bitmap)
+        val inset = (size * 0.3f).toInt()
+        glyph.setBounds(inset, inset, size - inset, size - inset)
+        glyph.draw(canvas)
+
+        return Icon.createWithAdaptiveBitmap(bitmap)
+    }
+
     private fun hiResIcon(context: Context, pkg: String): Drawable? = try {
         val pm = context.packageManager
         val info = pm.getApplicationInfo(pkg, 0)
