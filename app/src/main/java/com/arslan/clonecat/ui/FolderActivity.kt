@@ -36,6 +36,9 @@ class FolderActivity : BaseActivity() {
         private const val COLUMNS = 3
         private const val ROWS = 4
         private const val PAGE_SIZE = COLUMNS * ROWS
+
+        /** Last known app list per user, kept in memory for instant folder open. */
+        private val snapshots = mutableMapOf<Int, List<AppEntry>>()
     }
 
     private lateinit var binding: ActivityFolderBinding
@@ -67,6 +70,10 @@ class FolderActivity : BaseActivity() {
         binding.folderCard.setOnClickListener { /* keep open when tapping inside */ }
         binding.folderScrim.setOnClickListener { finish() }
 
+        snapshots[userId]?.let { cached ->
+            allApps = cached
+            render()
+        }
         load()
     }
 
@@ -85,8 +92,12 @@ class FolderActivity : BaseActivity() {
 
     private fun load() {
         lifecycleScope.launch {
-            allApps = AppRepository.appsFor(userId)
-            render()
+            val fresh = AppRepository.appsFor(userId)
+            if (fresh != allApps) {
+                allApps = fresh
+                snapshots[userId] = fresh
+                render()
+            }
         }
     }
 
