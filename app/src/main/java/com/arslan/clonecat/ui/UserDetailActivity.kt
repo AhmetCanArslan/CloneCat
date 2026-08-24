@@ -124,10 +124,6 @@ class UserDetailActivity : BaseActivity() {
             confirmSwitch()
             true
         }
-        R.id.action_commands -> {
-            CommandsSheet.show(this)
-            true
-        }
         else -> super.onOptionsItemSelected(item)
     }
 

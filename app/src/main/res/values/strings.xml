@@ -60,7 +60,6 @@
     <string name="proxy_secondary_message">This app lives in a full secondary user, which cannot draw over the current user. Switch to it now?</string>
 
     <string name="action_refresh">Refresh</string>
-    <string name="action_commands">adb commands</string>
     <string name="action_setup">Shizuku setup</string>
     <string name="action_pin_all">Pin shortcuts for all apps</string>
     <string name="action_start_user">Start user</string>
@@ -74,12 +73,6 @@
     <string name="private_pin_clear">Clear</string>
     <string name="private_pin_saved">Saved.</string>
     <string name="private_pin_cleared">Cleared.</string>
-
-    <string name="commands_title">Commands run</string>
-    <string name="commands_empty">Nothing has been run yet.</string>
-    <string name="commands_copied">Copied to clipboard.</string>
-    <string name="copy_all">Copy all</string>
-    <string name="clear">Clear</string>
 
     <string name="setup_not_installed">Shizuku is not installed. CloneCat needs it to talk to the package manager.</string>
     <string name="setup_not_running">Shizuku is installed but not running. Start it, then come back.</string>

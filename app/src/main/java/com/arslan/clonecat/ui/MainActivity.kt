@@ -88,10 +88,6 @@ class MainActivity : BaseActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
-        R.id.action_commands -> {
-            CommandsSheet.show(this)
-            true
-        }
         R.id.action_setup -> {
             startActivity(Intent(this, SetupActivity::class.java))
             true

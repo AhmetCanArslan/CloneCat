@@ -2,10 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_commands"
-        android:title="@string/action_commands"
-        app:showAsAction="never" />
-    <item
         android:id="@+id/action_setup"
         android:title="@string/action_setup"
         app:showAsAction="never" />

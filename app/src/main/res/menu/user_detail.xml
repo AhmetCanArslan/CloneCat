@@ -17,8 +17,4 @@
         android:id="@+id/action_switch_user"
         android:title="@string/action_switch_user"
         app:showAsAction="never" />
-    <item
-        android:id="@+id/action_commands"
-        android:title="@string/action_commands"
-        app:showAsAction="never" />
 </menu>
