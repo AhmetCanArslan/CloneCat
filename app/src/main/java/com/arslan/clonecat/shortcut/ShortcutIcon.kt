@@ -37,7 +37,6 @@ object ShortcutIcon {
         }
     }
 
-    /** Adaptive icon with the user-type color as background and a white folder glyph. */
     fun folder(context: Context, type: UserType): Icon {
         val size = iconSize(context)
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)

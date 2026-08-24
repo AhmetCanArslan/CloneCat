@@ -1,7 +1,9 @@
 package com.arslan.clonecat.device
 
 import android.content.Context
+import android.content.pm.LauncherApps
 import android.content.pm.PackageManager
+import android.os.UserHandle
 import android.graphics.drawable.Drawable
 import android.util.LruCache
 import com.arslan.clonecat.cmd.AdbCommandBuilder
@@ -32,7 +34,7 @@ object AppRepository {
     private val LIBRARY_FLAGS = setOf("STATIC_SHARED_LIBRARY", "SDK_LIBRARY")
 
     private val labelCache = LruCache<String, String>(512)
-    private val iconCache = LruCache<String, Drawable>(128)
+    private val iconCache = LruCache<String, Drawable>(512)
 
     suspend fun appsFor(userId: Int): List<AppEntry> {
         val results = Device.runAll(
@@ -164,12 +166,22 @@ object AppRepository {
 
     suspend fun icon(context: Context, userId: Int, pkg: String): Drawable? {
         iconCache.get(pkg)?.let { return it }
-        val fromArchive = archiveInfo(context, userId, pkg)
-            ?.applicationInfo
-            ?.loadIcon(context.packageManager)
-        val icon = fromArchive ?: userZeroIcon(context, pkg)
-        if (icon != null) iconCache.put(pkg, icon)
+        val pm = context.packageManager
+        val icon = userZeroIcon(context, pkg)
+            ?: archiveInfo(context, userId, pkg)?.applicationInfo?.loadIcon(pm)
+            ?: launcherIcon(context, userId, pkg)
+            ?: pm.getDefaultActivityIcon()
+        iconCache.put(pkg, icon)
         return icon
+    }
+
+    private fun launcherIcon(context: Context, userId: Int, pkg: String): Drawable? = try {
+        val apps = context.getSystemService(LauncherApps::class.java)
+            ?.getActivityList(pkg, UserHandle.getUserHandleForUid(userId * PER_USER_RANGE))
+            .orEmpty()
+        apps.firstOrNull()?.getBadgedIcon(0)
+    } catch (_: Throwable) {
+        null
     }
 
     private suspend fun archiveInfo(

@@ -23,11 +23,6 @@ import com.arslan.clonecat.device.AppEntry
 import com.arslan.clonecat.device.AppRepository
 import kotlinx.coroutines.launch
 
-/**
- * Launcher-style folder popup: a fixed-size panel over the blurred home
- * screen showing the user's apps on 4x3 pages. Tapping an app launches it
- * in that user; tapping outside the panel closes it.
- */
 class FolderActivity : BaseActivity() {
 
     companion object {
@@ -41,7 +36,6 @@ class FolderActivity : BaseActivity() {
 
         private const val TARGET_DIM = 0.25f
 
-        /** Last known app list per user, kept in memory for instant folder open. */
         private val snapshots = mutableMapOf<Int, List<AppEntry>>()
     }
 
@@ -72,7 +66,7 @@ class FolderActivity : BaseActivity() {
             showSystem = checked
             render()
         }
-        binding.folderCard.setOnClickListener { /* keep open when tapping inside */ }
+        binding.folderCard.setOnClickListener { }
         binding.folderScrim.setOnClickListener { closeFolder() }
 
         snapshots[userId]?.let { cached ->
@@ -82,7 +76,6 @@ class FolderActivity : BaseActivity() {
         load()
     }
 
-    /** Shrinks the panel into the tapped icon (or its center) before closing. */
     private fun closeFolder(anchor: View? = null, onClosed: (() -> Unit)? = null) {
         val card = binding.folderCard
         if (card.visibility != View.VISIBLE || card.width == 0) {
@@ -119,7 +112,6 @@ class FolderActivity : BaseActivity() {
             .start()
     }
 
-    /** Blurs the wallpaper behind the folder window on Android 12+, dim otherwise. */
     private fun applyBlurBehind() {
         targetBlurPx =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -130,7 +122,6 @@ class FolderActivity : BaseActivity() {
                 0
             }
 
-        // Start fully clear, then fade the blur/dim in.
         window.setDimAmount(0f)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             window.attributes = window.attributes.apply { blurBehindRadius = 0 }
@@ -138,7 +129,6 @@ class FolderActivity : BaseActivity() {
         animateScrim(true)
     }
 
-    /** Fades the background blur and dim together, in on open / out on close. */
     private fun animateScrim(show: Boolean) {
         val manager = window
         val supportsBlur = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
@@ -245,7 +235,6 @@ class FolderActivity : BaseActivity() {
         }
     }
 
-    /** One folder page = one 4x3 grid of apps, swiped horizontally. */
     private inner class PagesAdapter : RecyclerView.Adapter<PageHolder>() {
 
         private val pages: MutableList<List<AppEntry>> = mutableListOf()

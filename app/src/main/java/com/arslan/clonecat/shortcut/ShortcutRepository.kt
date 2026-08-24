@@ -37,7 +37,6 @@ object ShortcutRepository {
         return requested
     }
 
-    /** Pins a home-screen "folder" shortcut that opens every app of the given user. */
     suspend fun pinFolder(context: Context, user: DeviceUser): Boolean {
         val manager = context.getSystemService(ShortcutManager::class.java) ?: return false
         if (!manager.isRequestPinShortcutSupported) return false
