@@ -82,7 +82,7 @@ object ShortcutRepository {
         return ShortcutInfo.Builder(context, id)
             .setShortLabel(label)
             .setLongLabel("$label · ${user.label}")
-            .setIcon(ShortcutIcon.custom(context, id) ?: ShortcutIcon.of(context, pkg, icon))
+            .setIcon(ShortcutIcon.custom(context, id) ?: ShortcutIcon.of(context, pkg, icon, user.takeIf { ShortcutCustomization.ring(context, id) }))
             .setIntent(intent)
             .build()
     }
@@ -104,9 +104,21 @@ object ShortcutRepository {
         return ShortcutInfo.Builder(context, id)
             .setShortLabel(label)
             .setLongLabel(context.getString(com.arslan.clonecat.R.string.user_apps_long_label, label))
-            .setIcon(ShortcutIcon.custom(context, id) ?: ShortcutIcon.userScreen(context, user.type))
+            .setIcon(ShortcutIcon.custom(context, id) ?: ShortcutIcon.userScreen(context, user))
             .setIntent(intent)
             .build()
+    }
+
+    suspend fun refreshUser(context: Context, user: DeviceUser) {
+        val manager = context.getSystemService(ShortcutManager::class.java) ?: return
+        val updated = ids(context).mapNotNull { id ->
+            when {
+                id == screenIdFor(user.id) -> buildUserScreen(context, user)
+                id.startsWith("u${user.id}:") -> build(context, user, id.substringAfter(':'), null)
+                else -> null
+            }
+        }
+        if (updated.isNotEmpty()) runCatching { manager.updateShortcuts(updated) }
     }
 
     suspend fun sync(context: Context, users: List<DeviceUser>, appsByUser: Map<Int, Set<String>>) {

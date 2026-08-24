@@ -22,6 +22,7 @@ import com.arslan.clonecat.device.PrivateCredentialStore
 import com.arslan.clonecat.device.UserRepository
 import com.arslan.clonecat.device.UserType
 import com.arslan.clonecat.shortcut.ShortcutRepository
+import com.arslan.clonecat.shortcut.UserColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 
@@ -124,6 +125,10 @@ class UserDetailActivity : BaseActivity() {
             runUserAction { UserRepository.stopUser(user.id) }
             true
         }
+        R.id.action_user_color -> {
+            pickUserColor()
+            true
+        }
         R.id.action_switch_user -> {
             confirmSwitch()
             true
@@ -172,6 +177,39 @@ class UserDetailActivity : BaseActivity() {
         }
     }
 
+    private fun pickUserColor() {
+        val row = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
+            setPadding(48, 32, 48, 8)
+        }
+        lateinit var dialog: androidx.appcompat.app.AlertDialog
+        UserColors.palette.forEach { color ->
+            val swatch = android.view.View(this).apply {
+                background = android.graphics.drawable.GradientDrawable().apply {
+                    shape = android.graphics.drawable.GradientDrawable.OVAL
+                    setColor(color)
+                }
+                setOnClickListener {
+                    UserColors.set(this@UserDetailActivity, user.id, color)
+                    lifecycleScope.launch {
+                        ShortcutRepository.refreshUser(this@UserDetailActivity, user)
+                    }
+                    dialog.dismiss()
+                }
+            }
+            val size = (40 * resources.displayMetrics.density).toInt()
+            row.addView(swatch, android.widget.LinearLayout.LayoutParams(size, size).apply {
+                marginEnd = (8 * resources.displayMetrics.density).toInt()
+            })
+        }
+        dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.action_user_color)
+            .setView(row)
+            .setNegativeButton(android.R.string.cancel, null)
+            .create()
+        dialog.show()
+    }
+
     private fun pin(app: AppEntry) {
         lifecycleScope.launch {
             if (!ShortcutRepository.isSupported(this@UserDetailActivity)) {
@@ -186,7 +224,7 @@ class UserDetailActivity : BaseActivity() {
             val id = ShortcutRepository.idFor(user.id, app.packageName)
             val label = AppRepository.label(this@UserDetailActivity, user.id, app.packageName)
             val icon = AppRepository.icon(this@UserDetailActivity, user.id, app.packageName)
-            editShortcut(id, label, icon) {
+            editShortcut(id, label, icon, UserColors.of(this@UserDetailActivity, user.id, user.type).takeIf { user.id != 0 }) {
                 lifecycleScope.launch {
                     val ok = ShortcutRepository.pin(this@UserDetailActivity, user, app.packageName, component)
                     toast(getString(if (ok) R.string.pin_requested else R.string.pin_unsupported))

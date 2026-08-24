@@ -19,6 +19,13 @@ object ShortcutCustomization {
         }
     }
 
+    fun ring(context: Context, id: String): Boolean =
+        prefs(context).getBoolean("ring:$id", true)
+
+    fun setRing(context: Context, id: String, value: Boolean) {
+        prefs(context).edit().putBoolean("ring:$id", value).apply()
+    }
+
     fun iconFile(context: Context, id: String): File? =
         File(dir(context), id.replace(Regex("[^A-Za-z0-9]"), "_") + ".png").takeIf { it.exists() }
 
@@ -56,7 +63,7 @@ object ShortcutCustomization {
         iconFile(context, id)?.let { BitmapFactory.decodeFile(it.path) }
 
     fun clear(context: Context, id: String) {
-        prefs(context).edit().remove(id).apply()
+        prefs(context).edit().remove(id).remove("ring:$id").apply()
         iconFile(context, id)?.delete()
     }
 

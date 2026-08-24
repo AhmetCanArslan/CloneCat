@@ -13,6 +13,7 @@ import com.arslan.clonecat.databinding.DialogIconPickerBinding
 import com.arslan.clonecat.databinding.DialogShortcutEditBinding
 import com.arslan.clonecat.shortcut.IconGlyphs
 import com.arslan.clonecat.shortcut.ShortcutCustomization
+import com.arslan.clonecat.shortcut.ShortcutIcon
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -25,27 +26,52 @@ open class BaseActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
     }
 
-    fun editShortcut(id: String, defaultLabel: String, defaultIcon: Drawable?, onSave: () -> Unit) {
+    fun editShortcut(
+        id: String,
+        defaultLabel: String,
+        defaultIcon: Drawable?,
+        ringColor: Int? = null,
+        onSave: () -> Unit
+    ) {
         val binding = DialogShortcutEditBinding.inflate(layoutInflater)
         binding.nameField.setText(ShortcutCustomization.name(this, id) ?: defaultLabel)
 
         var pickedDrawable: Drawable? = null
         var pickedBitmap: Bitmap? = null
         val custom = ShortcutCustomization.iconBitmap(this, id)
-        if (custom != null) binding.iconPreview.setImageBitmap(custom)
-        else binding.iconPreview.setImageDrawable(defaultIcon)
+
+        fun renderPreview() {
+            val bitmap = pickedBitmap ?: custom
+            val icon = pickedDrawable ?: defaultIcon
+            when {
+                bitmap != null -> binding.iconPreview.setImageBitmap(bitmap)
+                icon == null -> binding.iconPreview.setImageDrawable(null)
+                else -> binding.iconPreview.setImageBitmap(
+                    ShortcutIcon.preview(
+                        icon,
+                        ringColor.takeIf { pickedDrawable == null && binding.ringToggle.isChecked }
+                    )
+                )
+            }
+        }
+
+        binding.ringToggle.isChecked = ShortcutCustomization.ring(this, id)
+        binding.ringToggle.visibility =
+            if (ringColor == null) android.view.View.GONE else android.view.View.VISIBLE
+        binding.ringToggle.setOnCheckedChangeListener { _, _ -> renderPreview() }
+        renderPreview()
 
         binding.pickIcon.setOnClickListener {
             pickIcon(
                 onAppIcon = { icon ->
                     pickedDrawable = icon
                     pickedBitmap = null
-                    binding.iconPreview.setImageDrawable(icon)
+                    renderPreview()
                 },
                 onGlyph = { bitmap ->
                     pickedBitmap = bitmap
                     pickedDrawable = null
-                    binding.iconPreview.setImageBitmap(bitmap)
+                    renderPreview()
                 }
             )
         }
@@ -56,6 +82,7 @@ open class BaseActivity : AppCompatActivity() {
             .setPositiveButton(R.string.pin) { _, _ ->
                 val name = binding.nameField.text?.toString()?.trim().orEmpty()
                 ShortcutCustomization.setName(this, id, if (name == defaultLabel) null else name)
+                ShortcutCustomization.setRing(this, id, binding.ringToggle.isChecked)
                 pickedDrawable?.let { ShortcutCustomization.saveIcon(this, id, it) }
                 pickedBitmap?.let { ShortcutCustomization.saveBitmap(this, id, it) }
                 onSave()

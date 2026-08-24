@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.arslan.clonecat.R
 import com.arslan.clonecat.databinding.ItemUserBinding
 import com.arslan.clonecat.device.DeviceUser
-import com.arslan.clonecat.shortcut.ShortcutIcon
+import com.arslan.clonecat.shortcut.UserColors
 
 class UserAdapter(
     private val onClick: (DeviceUser) -> Unit,
@@ -41,7 +41,7 @@ class UserAdapter(
         )
         holder.binding.typeChip.text = user.type.name
         holder.binding.typeChip.chipBackgroundColor =
-            android.content.res.ColorStateList.valueOf(ShortcutIcon.colorFor(user.type))
+            android.content.res.ColorStateList.valueOf(UserColors.of(context, user.id, user.type))
         holder.binding.pinScreenButton.setOnClickListener { onPinScreen(user) }
         holder.itemView.setOnClickListener { onClick(user) }
     }

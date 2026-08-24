@@ -37,6 +37,7 @@
     <string name="pin_requested">Shortcut saved — confirm it on the home screen if asked.</string>
     <string name="shortcut_edit_title">Shortcut</string>
     <string name="shortcut_name_hint">Shortcut name</string>
+    <string name="shortcut_ring">Show profile color ring</string>
     <string name="shortcut_pick_icon">Choose icon</string>
     <string name="icon_tab_apps">Apps</string>
     <string name="icon_tab_custom">Custom</string>
@@ -64,6 +65,7 @@
     <string name="action_pin_all">Pin shortcuts for all apps</string>
     <string name="action_start_user">Start user</string>
     <string name="action_stop_user">Stop user</string>
+    <string name="action_user_color">Profile color</string>
     <string name="action_switch_user">Switch to user</string>
     <string name="action_private_pin">Private space PIN</string>
     <string name="private_pin_title">Private space PIN</string>
