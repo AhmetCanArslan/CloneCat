@@ -70,7 +70,8 @@ object ShortcutRepository {
             action = LaunchProxyActivity.ACTION_LAUNCH
             `package` = context.packageName
             setClassName(context.packageName, LaunchProxyActivity::class.java.name)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            data = android.net.Uri.parse("clonecat://launch/${user.id}/$pkg")
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             putExtra(LaunchProxyActivity.EXTRA_USER_ID, user.id)
             putExtra(LaunchProxyActivity.EXTRA_PACKAGE, pkg)
             putExtra(LaunchProxyActivity.EXTRA_COMPONENT, target)
@@ -90,7 +91,8 @@ object ShortcutRepository {
         val intent = Intent(context, UserAppsActivity::class.java).apply {
             action = Intent.ACTION_VIEW
             `package` = context.packageName
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            data = android.net.Uri.parse("clonecat://user/${user.id}")
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             putExtra(UserAppsActivity.EXTRA_USER_ID, user.id)
             putExtra(UserAppsActivity.EXTRA_USER_NAME, user.label)
             putExtra(UserAppsActivity.EXTRA_USER_TYPE, user.type.name)

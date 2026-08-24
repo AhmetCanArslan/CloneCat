@@ -35,9 +35,6 @@ class UserAppsActivity : BaseActivity() {
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
 
-        userId = intent.getIntExtra(EXTRA_USER_ID, 0)
-        title = intent.getStringExtra(EXTRA_USER_NAME).orEmpty()
-
         adapter = AppGridAdapter(
             bindAsync = { app, apply ->
                 lifecycleScope.launch {
@@ -59,11 +56,21 @@ class UserAppsActivity : BaseActivity() {
             render()
         }
 
-        val cached = snapshots[userId] ?: AppRepository.fastApps(this, userId)
-        if (cached.isNotEmpty()) {
-            allApps = cached
-            render()
-        }
+        bindUser()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        bindUser()
+    }
+
+    private fun bindUser() {
+        userId = intent.getIntExtra(EXTRA_USER_ID, 0)
+        title = intent.getStringExtra(EXTRA_USER_NAME).orEmpty()
+
+        allApps = snapshots[userId] ?: AppRepository.fastApps(this, userId)
+        render()
         load()
     }
 
