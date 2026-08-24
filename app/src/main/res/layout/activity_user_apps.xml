@@ -43,6 +43,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:drawableTop="@drawable/ic_paw"
+            android:drawablePadding="12dp"
+            android:gravity="center"
             android:text="@string/user_apps_empty"
             android:visibility="gone" />
     </FrameLayout>

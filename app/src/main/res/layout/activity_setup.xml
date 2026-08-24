@@ -18,6 +18,9 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:gravity="center"
+        android:drawableTop="@drawable/ic_paw_large"
+        android:drawablePadding="20dp"
+        app:drawableTint="?attr/colorPrimary"
         android:padding="32dp"
         android:textAppearance="?attr/textAppearanceBodyLarge" />
 

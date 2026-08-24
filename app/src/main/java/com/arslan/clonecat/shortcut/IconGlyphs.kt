@@ -94,6 +94,7 @@ object IconGlyphs {
         R.drawable.ic_picon_palette,
         R.drawable.ic_picon_password,
         R.drawable.ic_picon_pause,
+        R.drawable.ic_picon_paw,
         R.drawable.ic_picon_pentagon,
         R.drawable.ic_picon_photo_camera,
         R.drawable.ic_picon_play_arrow,

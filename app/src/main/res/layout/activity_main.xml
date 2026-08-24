@@ -14,6 +14,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            app:logo="@drawable/ic_paw"
             app:title="@string/users_title" />
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -37,7 +38,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        android:text="@string/clone" />
+        android:text="@string/clone"
+        app:icon="@drawable/ic_paw" />
 
     <TextView
         android:id="@+id/emptyView"
@@ -45,6 +47,10 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:padding="24dp"
+        android:drawableTop="@drawable/ic_paw"
+        android:drawablePadding="12dp"
+        android:gravity="center"
+        app:drawableTint="?android:attr/textColorSecondary"
         android:text="@string/no_users"
         android:visibility="gone" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

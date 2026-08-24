@@ -5,11 +5,20 @@
     android:layout_height="match_parent"
     android:background="#66000000">
 
+    <ImageView
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_paw"
+        app:tint="?attr/colorPrimary" />
+
     <com.google.android.material.progressindicator.CircularProgressIndicator
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:indeterminate="true"
+        app:indicatorSize="72dp"
         app:indicatorColor="?attr/colorPrimary" />
 
 </FrameLayout>
