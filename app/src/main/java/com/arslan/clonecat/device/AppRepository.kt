@@ -157,20 +157,23 @@ object AppRepository {
         }.distinctBy { it.packageName }.sortedBy { it.packageName }
     }
 
-    suspend fun install(userId: Int, pkg: String): ShellResult {
+    suspend fun install(userId: Int, pkg: String, sources: List<Int> = listOf(0)): ShellResult {
         val existing = Device.run(AdbCommandBuilder.installExisting(userId, pkg))
         if (existing.success && !existing.output.contains("Failure", ignoreCase = true)) return existing
-        return sessionInstall(userId, pkg) ?: existing
+        return sessionInstall(userId, pkg, sources) ?: existing
     }
 
-    private suspend fun sessionInstall(userId: Int, pkg: String): ShellResult? {
-        val paths = Device.run(AdbCommandBuilder.apkPath(0, pkg))
-            .stdout
-            .lineSequence()
-            .filter { it.startsWith("package:") }
-            .map { it.removePrefix("package:").trim() }
-            .filter { it.endsWith(".apk") }
-            .toList()
+    private suspend fun sessionInstall(userId: Int, pkg: String, sources: List<Int>): ShellResult? {
+        val paths = (sources + 0).distinct().firstNotNullOfOrNull { source ->
+            Device.run(AdbCommandBuilder.apkPath(source, pkg))
+                .stdout
+                .lineSequence()
+                .filter { it.startsWith("package:") }
+                .map { it.removePrefix("package:").trim() }
+                .filter { it.endsWith(".apk") }
+                .toList()
+                .takeIf { it.isNotEmpty() }
+        }.orEmpty()
         if (paths.isEmpty()) return null
 
         val create = Device.run(AdbCommandBuilder.installCreate(userId, pkg))

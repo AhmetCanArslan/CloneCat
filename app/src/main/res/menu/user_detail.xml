@@ -6,6 +6,14 @@
         android:title="@string/action_pin_all"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_export_user"
+        android:title="@string/action_export_user"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_import_user"
+        android:title="@string/action_import_user"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_start_user"
         android:title="@string/action_start_user"
         app:showAsAction="never" />

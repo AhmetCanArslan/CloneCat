@@ -43,6 +43,31 @@ class UserDetailActivity : BaseActivity() {
     private var showSystem = false
     private var query: String = ""
 
+    private val exportPicker = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        if (uri == null) return@registerForActivityResult
+        lifecycleScope.launch {
+            val backup = com.arslan.clonecat.backup.BackupRepository.collect(
+                this@UserDetailActivity,
+                listOf(user)
+            )
+            val ok = runCatching {
+                contentResolver.openOutputStream(uri, "wt")?.use {
+                    it.write(com.arslan.clonecat.backup.BackupRepository.toJson(backup).toByteArray())
+                } ?: error("no stream")
+            }.isSuccess
+            toast(
+                if (ok) getString(R.string.export_user_done, backup.users.firstOrNull()?.apps?.size ?: 0)
+                else getString(R.string.export_failed)
+            )
+        }
+    }
+
+    private val importPicker = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri -> if (uri != null) readBackup(uri) }
+
     private val clonePicker = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val packages = result.data?.getStringArrayExtra(ClonePickerActivity.RESULT_PACKAGES).orEmpty()
         if (result.resultCode == RESULT_OK && packages.isNotEmpty()) cloneInto(packages.toList())
@@ -117,6 +142,16 @@ class UserDetailActivity : BaseActivity() {
             pinAll()
             true
         }
+        R.id.action_export_user -> {
+            val stamp = java.text.SimpleDateFormat("yyyyMMdd-HHmm", java.util.Locale.US)
+                .format(java.util.Date())
+            exportPicker.launch("clonecat-${user.type.name.lowercase()}-$stamp.json")
+            true
+        }
+        R.id.action_import_user -> {
+            importPicker.launch(arrayOf("application/json", "text/plain", "*/*"))
+            true
+        }
         R.id.action_start_user -> {
             runUserAction { UserRepository.startUser(user.id) }
             true
@@ -142,6 +177,77 @@ class UserDetailActivity : BaseActivity() {
             allApps = AppRepository.appsFor(user.id)
             binding.swipeRefresh.isRefreshing = false
             render()
+        }
+    }
+
+    private fun readBackup(uri: android.net.Uri) {
+        val backup = runCatching {
+            val raw = contentResolver.openInputStream(uri)?.use { it.readBytes().decodeToString() }
+                ?: error("no stream")
+            com.arslan.clonecat.backup.BackupRepository.parse(raw)
+        }.getOrNull()
+        if (backup == null || backup.users.isEmpty()) {
+            toast(getString(R.string.import_failed))
+            return
+        }
+        if (backup.users.size == 1) {
+            confirmImport(backup, backup.users[0])
+            return
+        }
+        val labels = backup.users
+            .map { "${it.name} · ${it.type.name} (${it.apps.size})" }
+            .toTypedArray()
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.import_source_title)
+            .setItems(labels) { _, index -> confirmImport(backup, backup.users[index]) }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun confirmImport(
+        backup: com.arslan.clonecat.backup.Backup,
+        saved: com.arslan.clonecat.backup.BackupUser
+    ) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.import_confirm_title)
+            .setMessage(getString(R.string.import_confirm_message, saved.apps.size, saved.name, user.label))
+            .setPositiveButton(R.string.import_action) { _, _ -> runImport(backup, saved) }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun runImport(
+        backup: com.arslan.clonecat.backup.Backup,
+        saved: com.arslan.clonecat.backup.BackupUser
+    ) {
+        binding.swipeRefresh.isRefreshing = true
+        toast(getString(R.string.import_working))
+        lifecycleScope.launch {
+            val users = UserRepository.listUsers()
+            val result = com.arslan.clonecat.backup.BackupRepository.restoreInto(
+                this@UserDetailActivity,
+                backup,
+                saved,
+                user,
+                users
+            )
+            binding.swipeRefresh.isRefreshing = false
+            val message = buildString {
+                append(getString(R.string.import_installed, result.installed, result.alreadyThere))
+                if (result.notOnDevice.isNotEmpty()) {
+                    append("\n\n").append(getString(R.string.import_not_on_device))
+                    append("\n").append(result.notOnDevice.joinToString("\n"))
+                }
+                if (result.failures.isNotEmpty()) {
+                    append("\n\n").append(getString(R.string.import_failures))
+                    append("\n").append(result.failures.joinToString("\n"))
+                }
+            }
+            MaterialAlertDialogBuilder(this@UserDetailActivity)
+                .setTitle(R.string.import_summary_title)
+                .setMessage(message)
+                .setPositiveButton(android.R.string.ok) { _, _ -> load() }
+                .show()
         }
     }
 
