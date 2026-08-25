@@ -130,13 +130,13 @@ class MainActivity : BaseActivity() {
     }
 
     private fun load() {
-        binding.swipeRefresh.isRefreshing = true
         lifecycleScope.launch {
             users = UserRepository.listUsers()
             adapter.submit(users)
-            binding.emptyView.visibility = if (users.isEmpty()) View.VISIBLE else View.GONE
             binding.swipeRefresh.isRefreshing = false
+            binding.emptyView.visibility = if (users.isEmpty()) View.VISIBLE else View.GONE
             syncShortcuts(users)
+            AppRepository.warm(this@MainActivity, users.map { it.id })
         }
     }
 

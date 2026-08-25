@@ -72,13 +72,14 @@ class UserAppsActivity : BaseActivity() {
         userId = intent.getIntExtra(EXTRA_USER_ID, 0)
         title = intent.getStringExtra(EXTRA_USER_NAME).orEmpty()
 
-        allApps = snapshots[userId] ?: AppRepository.fastApps(this, userId)
+        allApps = snapshots[userId]
+            ?: AppRepository.cachedApps(userId)
+            ?: AppRepository.fastApps(this, userId)
         render()
         load()
     }
 
     private fun load() {
-        binding.swipeRefresh.isRefreshing = true
         lifecycleScope.launch {
             allApps = AppRepository.appsFor(userId)
             snapshots[userId] = allApps

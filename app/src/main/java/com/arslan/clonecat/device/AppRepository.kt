@@ -46,6 +46,15 @@ object AppRepository {
     private val labelJobs = mutableMapOf<String, Deferred<String>>()
     private val iconJobs = mutableMapOf<String, Deferred<Drawable?>>()
 
+    private val appCache = mutableMapOf<Int, List<AppEntry>>()
+
+    fun cachedApps(userId: Int): List<AppEntry>? = synchronized(appCache) { appCache[userId] }
+
+    private fun cache(userId: Int, apps: List<AppEntry>): List<AppEntry> {
+        if (apps.isNotEmpty()) synchronized(appCache) { appCache[userId] = apps }
+        return apps
+    }
+
     suspend fun appsFor(userId: Int): List<AppEntry> {
         val results = Device.runAll(
             listOf(
@@ -64,13 +73,16 @@ object AppRepository {
                 apps.add(AppEntry(userId, match.groupValues[1], uid, isSystem))
             }
         }
-        if (apps.isNotEmpty()) return apps.sortedBy { it.packageName }
+        if (apps.isNotEmpty()) return cache(userId, apps.sortedBy { it.packageName })
 
         val dump = Device.run(AdbCommandBuilder.dumpsysPackages())
         if (!dump.success) return emptyList()
-        return parseDumpsysPackages(dump.stdout, setOf(userId))[userId]
-            .orEmpty()
-            .sortedBy { it.packageName }
+        return cache(
+            userId,
+            parseDumpsysPackages(dump.stdout, setOf(userId))[userId]
+                .orEmpty()
+                .sortedBy { it.packageName }
+        )
     }
 
     internal fun parseDumpsysPackages(
@@ -158,6 +170,7 @@ object AppRepository {
     }
 
     suspend fun install(userId: Int, pkg: String, sources: List<Int> = listOf(0)): ShellResult {
+        synchronized(appCache) { appCache.remove(userId) }
         val existing = Device.run(AdbCommandBuilder.installExisting(userId, pkg))
         if (existing.success && !existing.output.contains("Failure", ignoreCase = true)) return existing
         return sessionInstall(userId, pkg, sources) ?: existing
@@ -191,8 +204,10 @@ object AppRepository {
         return Device.run(AdbCommandBuilder.installCommit(sessionId))
     }
 
-    suspend fun uninstall(userId: Int, pkg: String): ShellResult =
-        Device.run(AdbCommandBuilder.uninstall(userId, pkg))
+    suspend fun uninstall(userId: Int, pkg: String): ShellResult {
+        synchronized(appCache) { appCache.remove(userId) }
+        return Device.run(AdbCommandBuilder.uninstall(userId, pkg))
+    }
 
     suspend fun launcherComponent(context: Context, userId: Int, pkg: String): String? {
         val query = Device.run(AdbCommandBuilder.queryLauncherActivities(userId, pkg))
@@ -253,6 +268,22 @@ object AppRepository {
             }
         }
         return job.await()
+    }
+
+    private var warmJob: Job? = null
+
+    fun warm(caller: Context, userIds: List<Int>) {
+        val context = caller.applicationContext
+        if (warmJob?.isActive == true) return
+        warmJob = scope.launch {
+            userIds.forEach { userId ->
+                val apps = appsFor(userId)
+                apps.forEach { app ->
+                    label(context, app.userId, app.packageName)
+                    icon(context, app.userId, app.packageName)
+                }
+            }
+        }
     }
 
     private var prefetchJob: Job? = null

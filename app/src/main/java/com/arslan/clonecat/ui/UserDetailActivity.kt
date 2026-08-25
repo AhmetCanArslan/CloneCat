@@ -172,7 +172,10 @@ class UserDetailActivity : BaseActivity() {
     }
 
     private fun load() {
-        binding.swipeRefresh.isRefreshing = true
+        if (allApps.isEmpty()) AppRepository.cachedApps(user.id)?.let {
+            allApps = it
+            render()
+        }
         lifecycleScope.launch {
             allApps = AppRepository.appsFor(user.id)
             binding.swipeRefresh.isRefreshing = false
