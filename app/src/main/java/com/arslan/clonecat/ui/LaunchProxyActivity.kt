@@ -66,9 +66,12 @@ class LaunchProxyActivity : ComponentActivity() {
                 user = UserRepository.listUsers().firstOrNull { it.id == userId }
             }
             val pin = PrivateCredentialStore.get(this)
-            if (!pin.isNullOrBlank()) {
+            if (user?.unlocked != true && !pin.isNullOrBlank()) {
                 Device.run(AdbCommandBuilder.unlockUser(userId, pin))
-            } else if (user != null && !user.unlocked) {
+                if (user?.running != true) UserRepository.startUser(userId)
+                user = UserRepository.listUsers().firstOrNull { it.id == userId }
+            }
+            if (user == null || !user.running || !user.unlocked) {
                 toast(getString(R.string.proxy_private_locked))
                 finish()
                 return
