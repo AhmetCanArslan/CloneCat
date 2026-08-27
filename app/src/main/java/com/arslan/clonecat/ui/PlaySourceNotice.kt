@@ -27,3 +27,13 @@ fun Activity.warnLostPlaySource(packages: List<String>) {
         .setNegativeButton(android.R.string.ok, null)
         .show()
 }
+
+fun Activity.warnMissingPlay(missing: List<String>, onInstall: () -> Unit) {
+    if (missing.isEmpty()) return
+    MaterialAlertDialogBuilder(this)
+        .setTitle(R.string.missing_play_title)
+        .setMessage(getString(R.string.missing_play_message, missing.joinToString("\n")))
+        .setPositiveButton(R.string.missing_play_action) { _, _ -> onInstall() }
+        .setNegativeButton(android.R.string.cancel, null)
+        .show()
+}

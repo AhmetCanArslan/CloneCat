@@ -409,6 +409,8 @@ class UserDetailActivity : BaseActivity() {
                     .show()
             }
             warnLostPlaySource(lost)
+            val missing = AppRepository.missingPlayStack(user.id)
+            warnMissingPlay(missing) { cloneInto(missing) }
             load()
         }
     }

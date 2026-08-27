@@ -16,7 +16,10 @@ object PrivateCredentialStore {
     private const val KEY_CIPHERTEXT = "cred"
     private const val KEY_IV = "iv"
 
-    fun has(context: Context) = prefs(context).contains(KEY_CIPHERTEXT)
+    private const val LEGACY_PREFS = "clonecat_private_credential"
+    private const val LEGACY_KEY = "credential"
+
+    fun has(context: Context) = get(context) != null
 
     fun save(context: Context, pin: String) {
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
@@ -29,15 +32,34 @@ object PrivateCredentialStore {
     }
 
     fun get(context: Context): String? {
-        val p = prefs(context)
-        val ciphertext = p.getString(KEY_CIPHERTEXT, null)?.let { Base64.decode(it, Base64.NO_WRAP) } ?: return null
-        val iv = p.getString(KEY_IV, null)?.let { Base64.decode(it, Base64.NO_WRAP) } ?: return null
-        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-        cipher.init(Cipher.DECRYPT_MODE, key(), GCMParameterSpec(128, iv))
-        return String(cipher.doFinal(ciphertext), Charsets.UTF_8)
+        dropLegacy(context)
+        return decrypt(context)
     }
 
-    fun clear(context: Context) = prefs(context).edit().clear().apply()
+    private fun decrypt(context: Context): String? = try {
+        val p = prefs(context)
+        val ciphertext = p.getString(KEY_CIPHERTEXT, null)?.let { Base64.decode(it, Base64.NO_WRAP) }
+        val iv = p.getString(KEY_IV, null)?.let { Base64.decode(it, Base64.NO_WRAP) }
+        if (ciphertext == null || iv == null) {
+            null
+        } else {
+            val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+            cipher.init(Cipher.DECRYPT_MODE, key(), GCMParameterSpec(128, iv))
+            String(cipher.doFinal(ciphertext), Charsets.UTF_8)
+        }
+    } catch (_: Throwable) {
+        null
+    }
+
+    private fun dropLegacy(context: Context) {
+        val legacy = context.getSharedPreferences(LEGACY_PREFS, Context.MODE_PRIVATE)
+        if (legacy.contains(LEGACY_KEY)) legacy.edit().clear().apply()
+    }
+
+    fun clear(context: Context) {
+        prefs(context).edit().clear().apply()
+        context.getSharedPreferences(LEGACY_PREFS, Context.MODE_PRIVATE).edit().clear().apply()
+    }
 
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 

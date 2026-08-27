@@ -26,6 +26,9 @@
     <string name="no_target_users">No profiles or secondary users on this device.</string>
     <string name="clone_done">Cloned %1$d app(s).</string>
     <string name="clone_failed_title">Some apps could not be cloned</string>
+    <string name="missing_play_title">Google Play missing here</string>
+    <string name="missing_play_message">This user has no Google Play. Apps cloned here will fail with \"install this app from a device with Google Play\". Missing:\n\n%1$s\n\nInstall them into this user?</string>
+    <string name="missing_play_action">Install Play</string>
     <string name="play_source_title">Play Store record cleared</string>
     <string name="play_source_message">This user only accepts a full reinstall, so the Play Store install record of these apps was cleared for every user:\n\n%1$s\n\nUntil you reinstall them once from the Play Store, they may ask you to download them from Play again.</string>
     <string name="play_source_action">Open Play Store</string>

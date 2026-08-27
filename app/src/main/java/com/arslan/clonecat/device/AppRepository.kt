@@ -86,10 +86,7 @@ object AppRepository {
         )
     }
 
-    internal fun parseDumpsysPackages(
-        output: String,
-        userIds: Set<Int>
-    ): Map<Int, List<AppEntry>> {
+    private class DumpsysScan(val userIds: Set<Int>) {
         val byUser = mutableMapOf<Int, MutableList<AppEntry>>()
         val seen = mutableSetOf<String>()
         var pkg: String? = null
@@ -98,57 +95,62 @@ object AppRepository {
         var isSystem = false
         var pendingUser = -1
 
-        output.lineSequence().forEach { raw ->
-            val token = raw.trim()
-
-            if (DUMPSYS_END_TOKEN.matches(token)) {
-                pkg = null
-                return@forEach
-            }
-            DUMPSYS_PACKAGE_TOKEN.matchEntire(token)?.let { match ->
-                val name = match.groupValues[1]
-                pkg = name
-                appId = -1
-                isSystem = false
-                pendingUser = -1
-                skip = !seen.add(name)
-                return@forEach
-            }
-            val current = pkg ?: return@forEach
-            if (skip) return@forEach
-
-            DUMPSYS_APP_ID_TOKEN.matchEntire(token)?.let { match ->
-                if (appId < 0) appId = match.groupValues[1].toIntOrNull() ?: -1
-                pendingUser = -1
-                return@forEach
-            }
-            DUMPSYS_FLAGS_TOKEN.matchEntire(token)?.let { match ->
-                isSystem = match.groupValues[1].split(" ").contains("SYSTEM")
-                pendingUser = -1
-                return@forEach
-            }
-            DUMPSYS_PRIVATE_FLAGS_TOKEN.matchEntire(token)?.let { match ->
-                val flags = match.groupValues[1].split(" ")
-                if (flags.any { flag -> LIBRARY_FLAGS.any { flag.endsWith(it) } }) skip = true
-                pendingUser = -1
-                return@forEach
-            }
-            DUMPSYS_USER_TOKEN.matchEntire(token)?.let { match ->
-                pendingUser = match.groupValues[1].toIntOrNull() ?: -1
-                return@forEach
-            }
-            DUMPSYS_INSTALLED_TOKEN.matchEntire(token)?.let { match ->
-                val userId = pendingUser
-                pendingUser = -1
-                if (userId < 0 || appId < 0) return@forEach
-                if (match.groupValues[1] != "true") return@forEach
-                if (userId !in userIds) return@forEach
-                val uid = userId * PER_USER_RANGE + appId % PER_USER_RANGE
-                byUser.getOrPut(userId) { mutableListOf() }
-                    .add(AppEntry(userId, current, uid, isSystem))
-            }
+        fun startPackage(name: String) {
+            pkg = name
+            appId = -1
+            isSystem = false
+            pendingUser = -1
+            skip = !seen.add(name)
         }
-        return byUser
+
+        fun add(userId: Int) {
+            val name = pkg ?: return
+            if (userId < 0 || appId < 0 || userId !in userIds) return
+            val uid = userId * PER_USER_RANGE + appId % PER_USER_RANGE
+            byUser.getOrPut(userId) { mutableListOf() }.add(AppEntry(userId, name, uid, isSystem))
+        }
+    }
+
+    internal fun parseDumpsysPackages(
+        output: String,
+        userIds: Set<Int>
+    ): Map<Int, List<AppEntry>> {
+        val scan = DumpsysScan(userIds)
+        output.lineSequence().forEach { scan.feed(it.trim()) }
+        return scan.byUser
+    }
+
+    private fun DumpsysScan.feed(token: String) {
+        if (DUMPSYS_END_TOKEN.matches(token)) {
+            pkg = null
+            return
+        }
+        DUMPSYS_PACKAGE_TOKEN.matchEntire(token)?.let { return startPackage(it.groupValues[1]) }
+        if (pkg == null || skip) return
+
+        DUMPSYS_USER_TOKEN.matchEntire(token)?.let {
+            pendingUser = it.groupValues[1].toIntOrNull() ?: -1
+            return
+        }
+        DUMPSYS_INSTALLED_TOKEN.matchEntire(token)?.let {
+            val userId = pendingUser
+            pendingUser = -1
+            if (it.groupValues[1] == "true") add(userId)
+            return
+        }
+        pendingUser = -1
+        DUMPSYS_APP_ID_TOKEN.matchEntire(token)?.let {
+            if (appId < 0) appId = it.groupValues[1].toIntOrNull() ?: -1
+            return
+        }
+        DUMPSYS_FLAGS_TOKEN.matchEntire(token)?.let {
+            isSystem = it.groupValues[1].split(" ").contains("SYSTEM")
+            return
+        }
+        DUMPSYS_PRIVATE_FLAGS_TOKEN.matchEntire(token)?.let { match ->
+            val flags = match.groupValues[1].split(" ")
+            if (flags.any { flag -> LIBRARY_FLAGS.any { flag.endsWith(it) } }) skip = true
+        }
     }
 
     fun fastApps(caller: Context, userId: Int): List<AppEntry> {
@@ -178,6 +180,15 @@ object AppRepository {
         val out = lostPlaySource.toList()
         lostPlaySource.clear()
         out
+    }
+
+    private val PLAY_STACK = listOf("com.android.vending", "com.google.android.gms", "com.google.android.gsf")
+
+    suspend fun missingPlayStack(userId: Int): List<String> {
+        if (userId == 0) return emptyList()
+        val here = appsFor(userId).map { it.packageName }.toSet()
+        val zero = appsFor(0).map { it.packageName }.toSet()
+        return PLAY_STACK.filter { it in zero && it !in here }
     }
 
     suspend fun install(userId: Int, pkg: String, sources: List<Int> = listOf(0)): ShellResult {

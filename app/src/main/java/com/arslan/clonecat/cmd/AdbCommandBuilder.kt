@@ -4,8 +4,6 @@ data class DeviceCommand(val argv: String, val label: String)
 
 object AdbCommandBuilder {
 
-    private fun quote(value: String) = "'" + value.replace("'", "'\\''") + "'"
-
     fun listUsers() = DeviceCommand("pm list users", "List users")
 
     fun dumpUsers() = DeviceCommand("dumpsys user", "Dump user types")
@@ -73,7 +71,7 @@ object AdbCommandBuilder {
     fun switchUser(userId: Int) = DeviceCommand("am switch-user $userId", "Switch to user $userId")
 
     fun unlockUser(userId: Int, credential: String) = DeviceCommand(
-        "cmd lock_settings verify --user $userId --old ${quote(credential)}",
+        "cmd lock_settings verify --user $userId --old $credential",
         "Unlock user $userId"
     )
 }

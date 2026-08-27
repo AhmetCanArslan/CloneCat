@@ -10,6 +10,7 @@ import com.arslan.clonecat.cmd.AdbCommandBuilder
 import com.arslan.clonecat.device.AppRepository
 import com.arslan.clonecat.device.Device
 import com.arslan.clonecat.device.DeviceErrors
+import com.arslan.clonecat.device.DeviceUser
 import com.arslan.clonecat.device.PrivateCredentialStore
 import com.arslan.clonecat.device.UserRepository
 import com.arslan.clonecat.device.UserType
@@ -53,49 +54,13 @@ class LaunchProxyActivity : ComponentActivity() {
             finish()
             return
         }
-
-        if (type == UserType.PRIVATE) {
-            var user = UserRepository.listUsers().firstOrNull { it.id == userId }
-            if (user == null) {
-                toast(getString(R.string.proxy_user_gone))
-                finish()
-                return
-            }
-            if (!user.running) {
-                UserRepository.startUser(userId)
-                user = UserRepository.listUsers().firstOrNull { it.id == userId }
-            }
-            val pin = PrivateCredentialStore.get(this)
-            if (user?.unlocked != true && !pin.isNullOrBlank()) {
-                Device.run(AdbCommandBuilder.unlockUser(userId, pin))
-                if (user?.running != true) UserRepository.startUser(userId)
-                user = UserRepository.listUsers().firstOrNull { it.id == userId }
-            }
-            if (user == null || !user.running || !user.unlocked) {
-                toast(getString(R.string.proxy_private_locked))
-                finish()
-                return
-            }
-        }
+        if (type == UserType.PRIVATE && !preparePrivate(userId)) return
 
         var component = intent.getStringExtra(EXTRA_COMPONENT)?.takeUnless { it.isBlank() }
         var result = component?.let { Device.run(AdbCommandBuilder.startActivity(userId, it)) }
 
         if (result == null || !started(result)) {
-            val user = UserRepository.listUsers().firstOrNull { it.id == userId }
-            if (user == null) {
-                toast(getString(R.string.proxy_user_gone))
-                finish()
-                return
-            }
-            if (!user.running) UserRepository.startUser(userId)
-
-            component = AppRepository.launcherComponent(this, userId, pkg)
-            if (component.isNullOrBlank()) {
-                toast(getString(R.string.no_launcher_activity))
-                finish()
-                return
-            }
+            component = resolveComponent(userId, pkg) ?: return
             result = Device.run(AdbCommandBuilder.startActivity(userId, component))
         }
 
@@ -107,6 +72,45 @@ class LaunchProxyActivity : ComponentActivity() {
             type == UserType.SECONDARY -> offerSwitch(userId, component!!)
             else -> finish()
         }
+    }
+
+    private suspend fun preparePrivate(userId: Int): Boolean {
+        var user: DeviceUser? = userOrFinish(userId) ?: return false
+        if (user?.running != true) {
+            UserRepository.startUser(userId)
+            user = UserRepository.listUsers().firstOrNull { it.id == userId }
+        }
+        val pin = PrivateCredentialStore.get(this)
+        if (!pin.isNullOrBlank()) {
+            Device.run(AdbCommandBuilder.unlockUser(userId, pin))
+            return true
+        }
+        if (user != null && !user.unlocked) {
+            toast(getString(R.string.proxy_private_locked))
+            finish()
+            return false
+        }
+        return true
+    }
+
+    private suspend fun resolveComponent(userId: Int, pkg: String): String? {
+        val user = userOrFinish(userId) ?: return null
+        if (!user.running) UserRepository.startUser(userId)
+
+        val component = AppRepository.launcherComponent(this, userId, pkg)
+        if (!component.isNullOrBlank()) return component
+        toast(getString(R.string.no_launcher_activity))
+        finish()
+        return null
+    }
+
+    private suspend fun userOrFinish(userId: Int): DeviceUser? {
+        val user = UserRepository.listUsers().firstOrNull { it.id == userId }
+        if (user == null) {
+            toast(getString(R.string.proxy_user_gone))
+            finish()
+        }
+        return user
     }
 
     private fun started(result: ShellResult) =
