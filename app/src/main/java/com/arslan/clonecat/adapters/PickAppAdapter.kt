@@ -1,7 +1,6 @@
 package com.arslan.clonecat.adapters
 
 import android.content.Context
-import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -59,17 +58,11 @@ suspend fun loadPickApps(context: Context, exclude: Set<String>): Pair<List<Pick
     val apps = AppRepository.appsFor(0).filter { it.packageName !in exclude }
     val system = apps.associate { it.packageName to it.isSystem }
     val list = withContext(Dispatchers.IO) {
-        val pm = context.packageManager
         apps.map { app ->
-            val info = try {
-                pm.getApplicationInfo(app.packageName, 0)
-            } catch (_: PackageManager.NameNotFoundException) {
-                null
-            }
             PickApp(
                 app.packageName,
-                info?.loadLabel(pm)?.toString() ?: app.packageName,
-                info?.loadIcon(pm)
+                AppRepository.label(context, 0, app.packageName),
+                AppRepository.icon(context, 0, app.packageName)
             )
         }.sortedBy { it.label.lowercase() }
     }
