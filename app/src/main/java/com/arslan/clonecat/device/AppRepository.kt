@@ -37,6 +37,7 @@ object AppRepository {
     private val DUMPSYS_USER_TOKEN = Regex("""^User (\d+):$""")
     private val DUMPSYS_INSTALLED_TOKEN = Regex("""^installed=(\w+)$""")
     private val DUMPSYS_END_TOKEN = Regex("""^Shared users:$""")
+    private val INSTALLER_LINE = Regex("""^package:(\S+)\s+installer=(\S+)$""")
     private val LIBRARY_FLAGS = setOf("STATIC_SHARED_LIBRARY", "SDK_LIBRARY")
 
     private val labelCache = LruCache<String, String>(512)
@@ -169,11 +170,37 @@ object AppRepository {
         }.distinctBy { it.packageName }.sortedBy { it.packageName }
     }
 
+    private const val PLAY = "com.android.vending"
+
+    private val lostPlaySource = mutableSetOf<String>()
+
+    fun takeLostPlaySource(): List<String> = synchronized(lostPlaySource) {
+        val out = lostPlaySource.toList()
+        lostPlaySource.clear()
+        out
+    }
+
     suspend fun install(userId: Int, pkg: String, sources: List<Int> = listOf(0)): ShellResult {
         synchronized(appCache) { appCache.remove(userId) }
         val existing = Device.run(AdbCommandBuilder.installExisting(userId, pkg))
         if (existing.success && !existing.output.contains("Failure", ignoreCase = true)) return existing
-        return sessionInstall(userId, pkg, sources) ?: existing
+
+        val hadPlay = installerOf(pkg) == PLAY
+        val session = sessionInstall(userId, pkg, sources) ?: return existing
+        if (hadPlay && session.success && installerOf(pkg) != PLAY) {
+            synchronized(lostPlaySource) { lostPlaySource.add(pkg) }
+        }
+        return session
+    }
+
+    private suspend fun installerOf(pkg: String): String? {
+        val out = Device.run(AdbCommandBuilder.installerOf(pkg))
+        if (!out.success) return null
+        return out.stdout.lineSequence()
+            .mapNotNull { INSTALLER_LINE.matchEntire(it.trim()) }
+            .firstOrNull { it.groupValues[1] == pkg }
+            ?.groupValues?.get(2)
+            ?.takeIf { it != "null" && it.isNotBlank() }
     }
 
     private suspend fun sessionInstall(userId: Int, pkg: String, sources: List<Int>): ShellResult? {

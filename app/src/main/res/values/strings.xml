@@ -26,6 +26,9 @@
     <string name="no_target_users">No profiles or secondary users on this device.</string>
     <string name="clone_done">Cloned %1$d app(s).</string>
     <string name="clone_failed_title">Some apps could not be cloned</string>
+    <string name="play_source_title">Play Store record cleared</string>
+    <string name="play_source_message">This user only accepts a full reinstall, so the Play Store install record of these apps was cleared for every user:\n\n%1$s\n\nUntil you reinstall them once from the Play Store, they may ask you to download them from Play again.</string>
+    <string name="play_source_action">Open Play Store</string>
     <string name="nothing_to_clone">Every user-0 app is already installed here.</string>
 
     <string name="remove_title">Remove app</string>

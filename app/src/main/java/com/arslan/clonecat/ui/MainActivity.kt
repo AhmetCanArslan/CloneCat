@@ -173,6 +173,7 @@ class MainActivity : BaseActivity() {
                 }
             }
             binding.swipeRefresh.isRefreshing = false
+            val lost = AppRepository.takeLostPlaySource()
             if (failures.isEmpty()) {
                 toast(getString(R.string.clone_done, done))
             } else {
@@ -182,6 +183,7 @@ class MainActivity : BaseActivity() {
                     .setPositiveButton(android.R.string.ok, null)
                     .show()
             }
+            warnLostPlaySource(lost)
         }
     }
 

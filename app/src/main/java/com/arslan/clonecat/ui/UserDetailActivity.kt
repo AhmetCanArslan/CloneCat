@@ -398,6 +398,7 @@ class UserDetailActivity : BaseActivity() {
                 if (!result.success) failures.add("$pkg: ${DeviceErrors.explain(result)}")
             }
             binding.swipeRefresh.isRefreshing = false
+            val lost = AppRepository.takeLostPlaySource()
             if (failures.isEmpty()) {
                 toast(getString(R.string.clone_done, packages.size))
             } else {
@@ -407,6 +408,7 @@ class UserDetailActivity : BaseActivity() {
                     .setPositiveButton(android.R.string.ok, null)
                     .show()
             }
+            warnLostPlaySource(lost)
             load()
         }
     }

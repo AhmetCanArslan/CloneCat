@@ -45,6 +45,9 @@ object AdbCommandBuilder {
     fun installAbandon(sessionId: String) =
         DeviceCommand("pm install-abandon $sessionId", "Abandon session $sessionId")
 
+    fun installerOf(pkg: String) =
+        DeviceCommand("pm list packages -i --user 0 $pkg", "Installer of $pkg")
+
     fun apkPath(userId: Int, pkg: String) =
         DeviceCommand("pm path --user $userId $pkg", "APK path of $pkg")
 
