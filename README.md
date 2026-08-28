@@ -1,6 +1,8 @@
-<img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher_fg.png" width="120" alt="CloneCat icon">
+<p align="center">
+  <img src="app/src/main/res/playstore-icon.png" alt="CloneCat icon" width="128">
+</p>
 
-# CloneCat
+<h1 align="center">CloneCat</h1>
 
 CloneCat manages apps across all Android users on a device work profile, private space, clone/dual apps user and secondary users and pins home screen shortcuts that launch an app inside another user.
 
