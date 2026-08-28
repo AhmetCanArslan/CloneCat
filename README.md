@@ -8,6 +8,16 @@ CloneCat manages apps across all Android users on a device work profile, private
 
 No root, no PC, no ADB cable. Everything runs on-device through Shizuku.
 
+## Screenshots
+
+<p align="center">
+  <img src="docs/users.png" alt="User list" width="260">
+  <img src="docs/user-apps.png" alt="Apps of a user" width="260">
+  <img src="docs/select-apps.png" alt="Select apps to install" width="260">
+</p>
+
+<p align="center">User list &middot; apps of a user &middot; picking apps to install into a user</p>
+
 ## Features
 
 - List every user the device has, with app counts and status
