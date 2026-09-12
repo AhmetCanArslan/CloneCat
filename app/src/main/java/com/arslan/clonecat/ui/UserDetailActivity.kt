@@ -172,8 +172,8 @@ class UserDetailActivity : BaseActivity() {
     }
 
     private fun load() {
-        if (allApps.isEmpty()) AppRepository.cachedApps(user.id)?.let {
-            allApps = it
+        if (allApps.isEmpty()) {
+            allApps = AppRepository.cachedApps(user.id) ?: AppRepository.fastApps(this, user.id)
             render()
         }
         lifecycleScope.launch {
@@ -258,6 +258,7 @@ class UserDetailActivity : BaseActivity() {
         val filtered = allApps
             .filter { showSystem || !it.isSystem }
             .filter { query.isEmpty() || it.packageName.contains(query, ignoreCase = true) }
+        AppRepository.prefetch(applicationContext, filtered)
         adapter.submit(filtered)
         binding.emptyView.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
     }

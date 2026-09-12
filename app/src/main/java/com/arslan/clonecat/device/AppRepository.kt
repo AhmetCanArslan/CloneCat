@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -275,6 +276,7 @@ object AppRepository {
             labelJobs.getOrPut(key) {
                 scope.async {
                     val label = userZeroLabel(context, pkg)
+                        ?: launcherLabel(context, userId, pkg)
                         ?: archiveInfo(context, userId, pkg)
                             ?.applicationInfo?.loadLabel(context.packageManager)?.toString()
                         ?: pkg
@@ -296,8 +298,8 @@ object AppRepository {
                 scope.async {
                     val pm = context.packageManager
                     val icon = userZeroIcon(context, pkg)
-                        ?: archiveInfo(context, userId, pkg)?.applicationInfo?.loadIcon(pm)
                         ?: launcherIcon(context, userId, pkg)
+                        ?: archiveInfo(context, userId, pkg)?.applicationInfo?.loadIcon(pm)
                         ?: pm.getDefaultActivityIcon()
                     iconCache.put(key, icon)
                     synchronized(iconJobs) { iconJobs.remove(key) }
@@ -310,17 +312,10 @@ object AppRepository {
 
     private var warmJob: Job? = null
 
-    fun warm(caller: Context, userIds: List<Int>) {
-        val context = caller.applicationContext
+    fun warm(userIds: List<Int>) {
         if (warmJob?.isActive == true) return
         warmJob = scope.launch {
-            userIds.forEach { userId ->
-                val apps = appsFor(userId)
-                apps.forEach { app ->
-                    label(context, app.userId, app.packageName)
-                    icon(context, app.userId, app.packageName)
-                }
-            }
+            userIds.forEach { appsFor(it) }
         }
     }
 
@@ -329,12 +324,27 @@ object AppRepository {
     fun prefetch(context: Context, apps: List<AppEntry>) {
         prefetchJob?.cancel()
         prefetchJob = scope.launch {
-            apps.forEach { app ->
-                label(context, app.userId, app.packageName)
-                icon(context, app.userId, app.packageName)
+            apps.chunked(8).forEach { chunk ->
+                chunk.map { app ->
+                    async {
+                        label(context, app.userId, app.packageName)
+                        icon(context, app.userId, app.packageName)
+                    }
+                }.awaitAll()
             }
         }
     }
+
+    private fun launcherActivity(context: Context, userId: Int, pkg: String) = try {
+        context.getSystemService(LauncherApps::class.java)
+            ?.getActivityList(pkg, UserHandle.getUserHandleForUid(userId * PER_USER_RANGE))
+            ?.firstOrNull()
+    } catch (_: Throwable) {
+        null
+    }
+
+    private fun launcherLabel(context: Context, userId: Int, pkg: String): String? =
+        launcherActivity(context, userId, pkg)?.label?.toString()
 
     private fun launcherIcon(context: Context, userId: Int, pkg: String): Drawable? = try {
         val apps = context.getSystemService(LauncherApps::class.java)

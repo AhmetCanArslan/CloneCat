@@ -8,14 +8,16 @@ import androidx.recyclerview.widget.RecyclerView
 import com.arslan.clonecat.R
 import com.arslan.clonecat.databinding.ItemPickAppBinding
 import com.arslan.clonecat.device.AppRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 
-data class PickApp(val packageName: String, val label: String, val icon: Drawable?)
+data class PickApp(val packageName: String, val label: String)
 
 class PickAppAdapter(
     private val selected: MutableSet<String>,
     private val locked: Set<String> = emptySet(),
+    private val bindIcon: (String, (Drawable?) -> Unit) -> Unit,
     private val onToggle: () -> Unit
 ) : RecyclerView.Adapter<PickAppAdapter.Holder>() {
 
@@ -39,7 +41,11 @@ class PickAppAdapter(
         val app = apps[position]
         val context = holder.itemView.context
         holder.binding.appName.text = app.label
-        holder.binding.appIcon.setImageDrawable(app.icon)
+        holder.binding.appIcon.setImageDrawable(null)
+        holder.itemView.tag = app.packageName
+        bindIcon(app.packageName) { icon ->
+            if (holder.itemView.tag == app.packageName) holder.binding.appIcon.setImageDrawable(icon)
+        }
         val isLocked = app.packageName in locked
         holder.binding.check.setOnCheckedChangeListener(null)
         holder.binding.check.isChecked = isLocked || app.packageName in selected
@@ -57,14 +63,10 @@ class PickAppAdapter(
 suspend fun loadPickApps(context: Context, exclude: Set<String>): Pair<List<PickApp>, Map<String, Boolean>> {
     val apps = AppRepository.appsFor(0).filter { it.packageName !in exclude }
     val system = apps.associate { it.packageName to it.isSystem }
-    val list = withContext(Dispatchers.IO) {
+    val list = coroutineScope {
         apps.map { app ->
-            PickApp(
-                app.packageName,
-                AppRepository.label(context, 0, app.packageName),
-                AppRepository.icon(context, 0, app.packageName)
-            )
-        }.sortedBy { it.label.lowercase() }
-    }
+            async { PickApp(app.packageName, AppRepository.label(context, 0, app.packageName)) }
+        }.awaitAll()
+    }.sortedBy { it.label.lowercase() }
     return list to system
 }

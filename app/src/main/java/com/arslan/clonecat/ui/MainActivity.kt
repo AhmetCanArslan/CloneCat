@@ -136,7 +136,7 @@ class MainActivity : BaseActivity() {
             binding.swipeRefresh.isRefreshing = false
             binding.emptyView.visibility = if (users.isEmpty()) View.VISIBLE else View.GONE
             syncShortcuts(users)
-            AppRepository.warm(this@MainActivity, users.map { it.id })
+            AppRepository.warm(users.map { it.id })
         }
     }
 

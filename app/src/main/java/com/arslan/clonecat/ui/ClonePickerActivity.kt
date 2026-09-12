@@ -13,6 +13,7 @@ import com.arslan.clonecat.adapters.PickApp
 import com.arslan.clonecat.adapters.PickAppAdapter
 import com.arslan.clonecat.adapters.loadPickApps
 import com.arslan.clonecat.databinding.ActivityClonePickerBinding
+import com.arslan.clonecat.device.AppRepository
 import kotlinx.coroutines.launch
 
 class ClonePickerActivity : BaseActivity() {
@@ -43,7 +44,14 @@ class ClonePickerActivity : BaseActivity() {
         title = if (target.isNullOrBlank()) getString(R.string.select_apps_title)
         else getString(R.string.clone_title, target)
 
-        adapter = PickAppAdapter(selected, installed) { updateFab() }
+        adapter = PickAppAdapter(
+            selected,
+            installed,
+            bindIcon = { pkg, apply ->
+                lifecycleScope.launch { apply(AppRepository.icon(this@ClonePickerActivity, 0, pkg)) }
+            },
+            onToggle = { updateFab() }
+        )
         binding.appList.layoutManager = LinearLayoutManager(this)
         binding.appList.adapter = adapter
 
