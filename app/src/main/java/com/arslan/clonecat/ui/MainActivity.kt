@@ -106,9 +106,13 @@ class MainActivity : BaseActivity() {
             if (PrivateCredentialStore.has(this@MainActivity)) setText(PrivateCredentialStore.get(this@MainActivity))
         }
         val padding = (16 * resources.displayMetrics.density).toInt()
-        val container = android.widget.FrameLayout(this).apply {
+        val pattern = PatternView(this).apply { onPattern = { input.setText(it) } }
+        val container = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            gravity = android.view.Gravity.CENTER_HORIZONTAL
             setPadding(padding, 0, padding, 0)
-            addView(input)
+            addView(input, android.widget.LinearLayout.LayoutParams.MATCH_PARENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT)
+            addView(pattern)
         }
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.private_pin_title)
