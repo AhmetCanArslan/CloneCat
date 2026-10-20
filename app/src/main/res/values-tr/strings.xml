@@ -1,0 +1,120 @@
+<resources>
+    <string name="app_name">CloneCat</string>
+
+    <string name="users_title">Kullanıcılar</string>
+    <string name="user_meta">id %1$d · %2$s</string>
+    <string name="state_running">çalışıyor</string>
+    <string name="state_stopped">durduruldu</string>
+    <string name="no_users">Kullanıcı bulunamadı. Shizuku çalışıyor mu?</string>
+
+    <string name="app_meta">%1$s · uid %2$d</string>
+    <string name="no_apps">Eşleşen uygulama yok.</string>
+    <string name="search_hint">Paketlerde ara</string>
+    <string name="show_system">Sistem uygulamaları</string>
+
+    <string name="launch">Başlat</string>
+    <string name="pin">Sabitle</string>
+    <string name="remove">Kaldır</string>
+    <string name="clone">Klonla</string>
+    <string name="done">Bitti</string>
+
+    <string name="clone_title">%1$s içine klonla</string>
+    <string name="clone_selected">%1$d uygulamayı klonla</string>
+    <string name="clone_into_users_title">%1$d uygulamayı şuraya klonla</string>
+    <string name="select_apps_title">Uygulama seç</string>
+    <string name="already_cloned">Zaten klonlanmış</string>
+    <string name="no_target_users">Bu cihazda profil veya ikincil kullanıcı yok.</string>
+    <string name="clone_done">%1$d uygulama klonlandı.</string>
+    <string name="clone_failed_title">Bazı uygulamalar klonlanamadı</string>
+    <string name="missing_play_title">Burada Google Play yok</string>
+    <string name="missing_play_message">Bu kullanıcıda Google Play yok. Buraya klonlanan uygulamalar \"bu uygulamayı Google Play bulunan bir cihazdan yükleyin\" hatasıyla açılmaz. Eksik olanlar:\n\n%1$s\n\nBu kullanıcıya yüklensin mi?</string>
+    <string name="missing_play_action">Play\'i yükle</string>
+    <string name="play_source_title">Play Store kaydı silindi</string>
+    <string name="play_source_message">Bu kullanıcı yalnızca tam yeniden yüklemeyi kabul ediyor, bu yüzden şu uygulamaların Play Store yükleme kaydı tüm kullanıcılar için silindi:\n\n%1$s\n\nBunları Play Store\'dan bir kez yeniden yükleyene kadar sizden tekrar Play\'den indirmenizi isteyebilirler.</string>
+    <string name="play_source_action">Play Store\'u aç</string>
+    <string name="nothing_to_clone">Kullanıcı 0\'daki her uygulama burada zaten yüklü.</string>
+
+    <string name="remove_title">Uygulamayı kaldır</string>
+    <string name="remove_message">%1$s, %2$s kullanıcısından kaldırılsın mı? Uygulama diğer kullanıcılarda yüklü kalır.</string>
+
+    <string name="pin_all_title">Kısayolları sabitle</string>
+    <string name="pin_all_message">%1$d uygulama için ana ekran kısayolu sabitlensin mi? Başlatıcı her uygulama için bir kez sorar.</string>
+    <string name="pin_all_done">%1$d kısayol istendi.</string>
+    <string name="pin_requested">Kısayol kaydedildi — sorulursa ana ekranda onaylayın.</string>
+    <string name="shortcut_edit_title">Kısayol</string>
+    <string name="shortcut_name_hint">Kısayol adı</string>
+    <string name="shortcut_ring">Profil renk halkasını göster</string>
+    <string name="shortcut_pick_icon">Simge seç</string>
+    <string name="icon_tab_apps">Uygulamalar</string>
+    <string name="icon_tab_custom">Özel</string>
+    <string name="shortcut_reset">Sıfırla</string>
+    <string name="pin_unsupported">Bu başlatıcı sabitlenmiş kısayolları desteklemiyor.</string>
+    <string name="action_pin_user_apps">Uygulamalar ekranını ana ekrana ekle</string>
+    <string name="pin_user_apps_requested">Kısayol istendi — ana ekranda onaylayın.</string>
+    <string name="user_apps_long_label">%1$s uygulamaları</string>
+    <string name="user_apps_empty">Bu kullanıcıda yüklü uygulama yok.</string>
+    <string name="shortcut_stale">Hedef kullanıcı veya uygulama artık yok.</string>
+    <string name="no_launcher_activity">Bu uygulama için MAIN/LAUNCHER activity bulunamadı.</string>
+
+    <string name="switch_title">Kullanıcı değiştir</string>
+    <string name="switch_message">Geçiş yapmak geçerli oturumu kilitler ve tüm cihazı o kullanıcıya taşır.</string>
+    <string name="switch_action">Geçiş yap</string>
+    <string name="secondary_launch_hint">Tam bir ikincil kullanıcıda başlatıldı — yalnızca o kullanıcıya geçince görünür.</string>
+
+    <string name="proxy_shizuku_missing">Shizuku hazır değil.</string>
+    <string name="proxy_private_locked">Özel alan kilitli. Kilidini açın, sonra kısayola tekrar dokunun.</string>
+    <string name="proxy_user_gone">O kullanıcı artık yok.</string>
+    <string name="proxy_secondary_message">Bu uygulama tam bir ikincil kullanıcıda bulunuyor ve geçerli kullanıcının üzerinde görüntülenemez. Şimdi o kullanıcıya geçilsin mi?</string>
+
+    <string name="action_refresh">Yenile</string>
+    <string name="action_setup">Shizuku kurulumu</string>
+    <string name="action_pin_all">Tüm uygulamalar için kısayol sabitle</string>
+    <string name="action_start_user">Kullanıcıyı başlat</string>
+    <string name="action_stop_user">Kullanıcıyı durdur</string>
+    <string name="action_user_color">Profil rengi</string>
+    <string name="action_switch_user">Kullanıcıya geç</string>
+    <string name="action_private_pin">Özel alan PIN\'i</string>
+    <string name="action_export_user">Bu kullanıcının uygulamalarını dışa aktar</string>
+    <string name="export_failed">Dışa aktarma başarısız.</string>
+    <string name="export_user_done">%1$d uygulama dışa aktarıldı.</string>
+    <string name="import_failed">Yedek dosyası okunamadı.</string>
+    <string name="action_import_user">Bu kullanıcıya uygulama içe aktar</string>
+    <string name="import_source_title">Dosyadaki hangi kullanıcı?</string>
+    <string name="import_confirm_title">Uygulamaları içe aktar</string>
+    <string name="import_confirm_message">“%2$s” içindeki %1$d uygulama %3$s kullanıcısına yüklensin mi?</string>
+    <string name="import_action">Geri yükle</string>
+    <string name="import_summary_title">İçe aktarma tamamlandı</string>
+    <string name="import_installed">Yüklenen: %1$d\nZaten var: %2$d</string>
+    <string name="import_not_on_device">Bu cihazda kopyalanacak APK yok — şu uygulamalar hiçbir kullanıcıda yüklü değil:</string>
+    <string name="import_failures">Başarısız:</string>
+    <string name="import_working">Geri yükleniyor…</string>
+    <string name="private_pin_title">Özel alan PIN\'i</string>
+    <string name="private_pin_message">Android Keystore ile cihazda saklanır. Sabitlenmiş bir kısayolu başlatmadan önce özel alanın kilidini otomatik açmak için kullanılır.</string>
+    <string name="private_pin_hint">PIN / şifre</string>
+    <string name="private_pin_save">Kaydet</string>
+    <string name="private_pin_clear">Temizle</string>
+    <string name="private_pin_saved">Kaydedildi.</string>
+    <string name="private_pin_cleared">Temizlendi.</string>
+
+    <string name="setup_not_installed">Shizuku yüklü değil. CloneCat\'in paket yöneticisiyle konuşabilmesi için gerekli.</string>
+    <string name="setup_not_running">Shizuku yüklü ama çalışmıyor. Başlatın, sonra geri dönün.</string>
+    <string name="setup_no_permission">Shizuku çalışıyor. CloneCat\'e kullanma izni verin.</string>
+    <string name="setup_ready">Shizuku hazır.</string>
+    <string name="setup_action_install">Shizuku\'yu edin</string>
+    <string name="setup_action_start">Shizuku\'yu aç</string>
+    <string name="setup_action_grant">İzin ver</string>
+    <string name="setup_action_continue">Devam</string>
+    <string name="error_clone_blocked">Bu ROM, klon kullanıcıdaki üçüncü taraf uygulamalar için `install-existing` komutunu reddediyor ve APK oturum yüklemesi de başarısız oldu. Bu paket için üreticinin İkiz Uygulamalar ekranını kullanın.</string>
+    <string name="error_user_stopped">Hedef kullanıcı durdurulmuş veya kilitli. Önce başlatın veya kilidini açın.</string>
+    <string name="error_no_permission">Shizuku kabuğunun bu kullanıcı için izni yok. Bazı üretici profilleri bunu engeller.</string>
+    <string name="error_no_user">O kullanıcı artık yok. Kullanıcı listesini yenileyin.</string>
+    <string name="error_unknown_package">Paket kullanıcı 0\'da yüklü değil, bu yüzden klonlanacak bir şey yok.</string>
+    <string name="type_primary">ANA</string>
+    <string name="type_secondary">İKİNCİL</string>
+    <string name="type_managed">İŞ</string>
+    <string name="type_clone">KLON</string>
+    <string name="type_private">ÖZEL</string>
+    <string name="type_other">DİĞER</string>
+    <string name="user_fallback_name">Kullanıcı %1$d</string>
+    <string name="error_exit_code">çıkış kodu %1$d</string>
+</resources>
