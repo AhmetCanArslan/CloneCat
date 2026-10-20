@@ -48,7 +48,7 @@ class MainActivity : BaseActivity() {
                 startActivity(
                     Intent(this, UserDetailActivity::class.java)
                         .putExtra(UserDetailActivity.EXTRA_USER_ID, user.id)
-                        .putExtra(UserDetailActivity.EXTRA_USER_NAME, user.label)
+                        .putExtra(UserDetailActivity.EXTRA_USER_NAME, user.label(this@MainActivity))
                         .putExtra(UserDetailActivity.EXTRA_USER_TYPE, user.type.name)
                         .putExtra(UserDetailActivity.EXTRA_USER_RUNNING, user.running)
                 )
@@ -56,7 +56,7 @@ class MainActivity : BaseActivity() {
             onPinScreen = { user ->
                 val id = ShortcutRepository.screenIdFor(user.id)
                 val icon = androidx.core.content.ContextCompat.getDrawable(this, R.drawable.ic_apps_grid)
-                editShortcut(id, user.label, icon) {
+                editShortcut(id, user.label(this@MainActivity), icon) {
                     lifecycleScope.launch {
                         val ok = ShortcutRepository.pinUserScreen(this@MainActivity, user)
                         toast(getString(if (ok) R.string.pin_user_apps_requested else R.string.pin_unsupported))
@@ -146,7 +146,7 @@ class MainActivity : BaseActivity() {
             toast(getString(R.string.no_target_users))
             return
         }
-        val labels = targets.map { "${it.label} · ${getString(it.type.labelRes)}" }.toTypedArray()
+        val labels = targets.map { "${it.label(this)} · ${getString(it.type.labelRes)}" }.toTypedArray()
         val checked = BooleanArray(targets.size)
         MaterialAlertDialogBuilder(this)
             .setTitle(getString(R.string.clone_into_users_title, packages.size))
@@ -169,7 +169,7 @@ class MainActivity : BaseActivity() {
                 packages.filter { it !in installed }.forEach { pkg ->
                     val result = AppRepository.install(user.id, pkg)
                     if (result.success) done++
-                    else failures.add("${user.label} · $pkg: ${DeviceErrors.explain(this@MainActivity, result)}")
+                    else failures.add("${user.label(this@MainActivity)} · $pkg: ${DeviceErrors.explain(this@MainActivity, result)}")
                 }
             }
             binding.swipeRefresh.isRefreshing = false

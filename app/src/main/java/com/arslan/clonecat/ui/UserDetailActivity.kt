@@ -87,7 +87,7 @@ class UserDetailActivity : BaseActivity() {
             running = intent.getBooleanExtra(EXTRA_USER_RUNNING, false),
             unlocked = false
         )
-        title = user.label
+        title = user.label(this@UserDetailActivity)
 
         adapter = AppAdapter(
             bindAsync = { app, apply ->
@@ -213,7 +213,7 @@ class UserDetailActivity : BaseActivity() {
     ) {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.import_confirm_title)
-            .setMessage(getString(R.string.import_confirm_message, saved.apps.size, saved.name, user.label))
+            .setMessage(getString(R.string.import_confirm_message, saved.apps.size, saved.name, user.label(this@UserDetailActivity)))
             .setPositiveButton(R.string.import_action) { _, _ -> runImport(backup, saved) }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
@@ -370,7 +370,7 @@ class UserDetailActivity : BaseActivity() {
     private fun confirmRemove(app: AppEntry) {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.remove_title)
-            .setMessage(getString(R.string.remove_message, app.packageName, user.label))
+            .setMessage(getString(R.string.remove_message, app.packageName, user.label(this@UserDetailActivity)))
             .setPositiveButton(R.string.remove) { _, _ ->
                 lifecycleScope.launch {
                     val result = AppRepository.uninstall(user.id, app.packageName)
@@ -384,7 +384,7 @@ class UserDetailActivity : BaseActivity() {
     private fun openClonePicker() {
         clonePicker.launch(
             Intent(this, ClonePickerActivity::class.java)
-                .putExtra(ClonePickerActivity.EXTRA_USER_LABEL, user.label)
+                .putExtra(ClonePickerActivity.EXTRA_USER_LABEL, user.label(this@UserDetailActivity))
                 .putExtra(ClonePickerActivity.EXTRA_INSTALLED, allApps.map { it.packageName }.toTypedArray())
         )
     }

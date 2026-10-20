@@ -76,12 +76,12 @@ object ShortcutRepository {
             putExtra(LaunchProxyActivity.EXTRA_PACKAGE, pkg)
             putExtra(LaunchProxyActivity.EXTRA_COMPONENT, target)
             putExtra(LaunchProxyActivity.EXTRA_USER_TYPE, user.type.name)
-            putExtra(LaunchProxyActivity.EXTRA_USER_LABEL, user.label)
+            putExtra(LaunchProxyActivity.EXTRA_USER_LABEL, user.label(context))
         }
 
         return ShortcutInfo.Builder(context, id)
             .setShortLabel(label)
-            .setLongLabel("$label · ${user.label}")
+            .setLongLabel("$label · ${user.label(context)}")
             .setIcon(ShortcutIcon.custom(context, id) ?: ShortcutIcon.of(context, pkg, icon, user.takeIf { ShortcutCustomization.ring(context, id) }))
             .setIntent(intent)
             .build()
@@ -94,12 +94,12 @@ object ShortcutRepository {
             data = android.net.Uri.parse("clonecat://user/${user.id}")
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
             putExtra(UserAppsActivity.EXTRA_USER_ID, user.id)
-            putExtra(UserAppsActivity.EXTRA_USER_NAME, user.label)
+            putExtra(UserAppsActivity.EXTRA_USER_NAME, user.label(context))
             putExtra(UserAppsActivity.EXTRA_USER_TYPE, user.type.name)
         }
 
         val id = screenIdFor(user.id)
-        val label = ShortcutCustomization.name(context, id) ?: user.label
+        val label = ShortcutCustomization.name(context, id) ?: user.label(context)
 
         return ShortcutInfo.Builder(context, id)
             .setShortLabel(label)

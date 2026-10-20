@@ -32,7 +32,7 @@ class UserAdapter(
     override fun onBindViewHolder(holder: Holder, position: Int) {
         val user = users[position]
         val context = holder.itemView.context
-        holder.binding.userName.text = user.label
+        holder.binding.userName.text = user.label(context)
         holder.binding.userMeta.text = context.getString(
             R.string.user_meta,
             user.id,

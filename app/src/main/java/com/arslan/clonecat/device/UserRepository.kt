@@ -1,5 +1,6 @@
 package com.arslan.clonecat.device
 
+import android.content.Context
 import com.arslan.clonecat.R
 import com.arslan.clonecat.cmd.AdbCommandBuilder
 
@@ -31,7 +32,7 @@ data class DeviceUser(
     val running: Boolean,
     val unlocked: Boolean
 ) {
-    val label: String get() = name.ifBlank { "User $id" }
+    fun label(context: Context): String = name.ifBlank { context.getString(R.string.user_fallback_name, id) }
 }
 
 object UserRepository {

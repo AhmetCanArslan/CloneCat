@@ -49,7 +49,7 @@ object BackupRepository {
         val backupUsers = users.map { user ->
             BackupUser(
                 id = user.id,
-                name = user.label,
+                name = user.label(context),
                 type = user.type,
                 color = UserColors.of(context, user.id, user.type),
                 apps = AppRepository.appsFor(user.id)

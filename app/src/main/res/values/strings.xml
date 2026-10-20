@@ -115,5 +115,6 @@
     <string name="type_clone">CLONE</string>
     <string name="type_private">PRIVATE</string>
     <string name="type_other">OTHER</string>
+    <string name="user_fallback_name">User %1$d</string>
     <string name="error_exit_code">exit code %1$d</string>
 </resources>
