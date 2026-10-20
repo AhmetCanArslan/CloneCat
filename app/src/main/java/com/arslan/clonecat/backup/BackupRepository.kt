@@ -183,7 +183,7 @@ object BackupRepository {
                 else -> {
                     val result = AppRepository.install(target.id, pkg, sources)
                     if (result.success) installed++
-                    else failures.add("$pkg: ${DeviceErrors.explain(result)}")
+                    else failures.add("$pkg: ${DeviceErrors.explain(context, result)}")
                 }
             }
         }

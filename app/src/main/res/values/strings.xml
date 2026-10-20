@@ -104,4 +104,10 @@
     <string name="setup_action_start">Open Shizuku</string>
     <string name="setup_action_grant">Grant permission</string>
     <string name="setup_action_continue">Continue</string>
+    <string name="error_clone_blocked">This ROM refuses `install-existing` for third-party apps in a clone user, and the APK session install fell through too. Use the OEM Dual Apps screen for this package.</string>
+    <string name="error_user_stopped">Target user is stopped or locked. Start or unlock it first.</string>
+    <string name="error_no_permission">Shizuku\'s shell lacks permission for this user. Some OEM profiles block it.</string>
+    <string name="error_no_user">That user no longer exists. Refresh the user list.</string>
+    <string name="error_unknown_package">The package is not installed for user 0, so there is nothing to clone.</string>
+    <string name="error_exit_code">exit code %1$d</string>
 </resources>

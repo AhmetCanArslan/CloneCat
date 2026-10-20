@@ -1,25 +1,25 @@
 package com.arslan.clonecat.device
 
+import android.content.Context
+import com.arslan.clonecat.R
 import com.arslan.clonecat.shell.ShellResult
 
 object DeviceErrors {
 
-    fun explain(result: ShellResult): String {
-        val text = result.output.ifBlank { "exit code ${result.exitCode}" }
+    fun explain(context: Context, result: ShellResult): String {
+        val text = result.output.ifBlank { context.getString(R.string.error_exit_code, result.exitCode) }
         val lower = text.lowercase()
         return when {
             lower.contains("unable to install on cloned user") ->
-                "This ROM refuses `install-existing` for third-party apps in a clone user, " +
-                    "and the APK session install fell through too. " +
-                    "Use the OEM Dual Apps screen for this package."
+                context.getString(R.string.error_clone_blocked)
             lower.contains("not running") || lower.contains("not unlocked") ->
-                "Target user is stopped or locked. Start or unlock it first."
+                context.getString(R.string.error_user_stopped)
             lower.contains("do not have permission") || lower.contains("security exception") ->
-                "Shizuku's shell lacks permission for this user. Some OEM profiles block it."
+                context.getString(R.string.error_no_permission)
             lower.contains("no such user") || lower.contains("bad user number") ->
-                "That user no longer exists. Refresh the user list."
+                context.getString(R.string.error_no_user)
             lower.contains("unknown package") ->
-                "The package is not installed for user 0, so there is nothing to clone."
+                context.getString(R.string.error_unknown_package)
             else -> text
         }
     }

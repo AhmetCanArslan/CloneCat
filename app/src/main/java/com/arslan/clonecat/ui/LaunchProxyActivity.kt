@@ -66,7 +66,7 @@ class LaunchProxyActivity : ComponentActivity() {
 
         when {
             !started(result) -> {
-                toast(DeviceErrors.explain(result))
+                toast(DeviceErrors.explain(this@LaunchProxyActivity, result))
                 finish()
             }
             type == UserType.SECONDARY -> offerSwitch(userId, component!!)

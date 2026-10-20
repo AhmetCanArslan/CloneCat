@@ -169,7 +169,7 @@ class MainActivity : BaseActivity() {
                 packages.filter { it !in installed }.forEach { pkg ->
                     val result = AppRepository.install(user.id, pkg)
                     if (result.success) done++
-                    else failures.add("${user.label} · $pkg: ${DeviceErrors.explain(result)}")
+                    else failures.add("${user.label} · $pkg: ${DeviceErrors.explain(this@MainActivity, result)}")
                 }
             }
             binding.swipeRefresh.isRefreshing = false

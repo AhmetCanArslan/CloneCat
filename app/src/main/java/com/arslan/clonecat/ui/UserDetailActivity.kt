@@ -282,7 +282,7 @@ class UserDetailActivity : BaseActivity() {
             val result = com.arslan.clonecat.device.Device.run(
                 com.arslan.clonecat.cmd.AdbCommandBuilder.startActivity(user.id, component)
             )
-            if (!result.success) toast(DeviceErrors.explain(result))
+            if (!result.success) toast(DeviceErrors.explain(this@UserDetailActivity, result))
             else if (user.type == UserType.SECONDARY) toast(getString(R.string.secondary_launch_hint))
         }
     }
@@ -374,7 +374,7 @@ class UserDetailActivity : BaseActivity() {
             .setPositiveButton(R.string.remove) { _, _ ->
                 lifecycleScope.launch {
                     val result = AppRepository.uninstall(user.id, app.packageName)
-                    if (!result.success) toast(DeviceErrors.explain(result)) else load()
+                    if (!result.success) toast(DeviceErrors.explain(this@UserDetailActivity, result)) else load()
                 }
             }
             .setNegativeButton(android.R.string.cancel, null)
@@ -396,7 +396,7 @@ class UserDetailActivity : BaseActivity() {
             val failures = mutableListOf<String>()
             packages.forEach { pkg ->
                 val result = AppRepository.install(user.id, pkg)
-                if (!result.success) failures.add("$pkg: ${DeviceErrors.explain(result)}")
+                if (!result.success) failures.add("$pkg: ${DeviceErrors.explain(this@UserDetailActivity, result)}")
             }
             binding.swipeRefresh.isRefreshing = false
             val lost = AppRepository.takeLostPlaySource()
@@ -430,7 +430,7 @@ class UserDetailActivity : BaseActivity() {
     private fun runUserAction(action: suspend () -> com.arslan.clonecat.shell.ShellResult) {
         lifecycleScope.launch {
             val result = action()
-            if (!result.success) toast(DeviceErrors.explain(result))
+            if (!result.success) toast(DeviceErrors.explain(this@UserDetailActivity, result))
             else toast(getString(R.string.done))
         }
     }
