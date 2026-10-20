@@ -58,8 +58,9 @@ object UserRepository {
 
         val types = HashMap<Int, UserType>()
         val unlocked = mutableSetOf<Int>()
+        val quiet = mutableSetOf<Int>()
         val dump = Device.run(AdbCommandBuilder.dumpUsers())
-        if (dump.success) parseUserDump(dump.stdout, types, running, unlocked)
+        if (dump.success) parseUserDump(dump.stdout, types, running, unlocked, quiet)
 
         return names.map { (id, name) ->
             DeviceUser(
@@ -67,7 +68,7 @@ object UserRepository {
                 name = name,
                 type = types[id] ?: if (id == 0) UserType.PRIMARY else UserType.OTHER,
                 running = id in running,
-                unlocked = id in unlocked
+                unlocked = id in unlocked && id !in quiet
             )
         }
     }
@@ -76,7 +77,8 @@ object UserRepository {
         output: String,
         types: MutableMap<Int, UserType>,
         running: MutableSet<Int>,
-        unlocked: MutableSet<Int>
+        unlocked: MutableSet<Int>,
+        quiet: MutableSet<Int>
     ) {
         var current = -1
         output.lineSequence().forEach { raw ->
@@ -86,6 +88,7 @@ object UserRepository {
                 return@forEach
             }
             if (current < 0) return@forEach
+            if (line.startsWith("Flags:") && line.contains("QUIET_MODE")) quiet.add(current)
             TYPE_LINE.matchEntire(line)?.let { match ->
                 types[current] = typeOf(match.groupValues[1])
                 return@forEach
@@ -119,4 +122,5 @@ object UserRepository {
 
     suspend fun unlock(id: Int, credential: String) =
         Device.run(AdbCommandBuilder.unlockUser(id, credential))
+
 }
