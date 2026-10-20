@@ -89,8 +89,8 @@
     <string name="import_failures">Başarısız:</string>
     <string name="import_working">Geri yükleniyor…</string>
     <string name="private_pin_title">Özel alan PIN\'i</string>
-    <string name="private_pin_message">Android Keystore ile cihazda saklanır. Sabitlenmiş bir kısayolu başlatmadan önce özel alanın kilidini otomatik açmak için kullanılır.</string>
-    <string name="private_pin_hint">PIN / şifre</string>
+    <string name="private_pin_message">Android Keystore ile cihazda saklanır. Sabitlenmiş bir kısayolu başlatmadan önce özel alanın kilidini otomatik açmak için kullanılır. PIN veya şifre yazın ya da deseninizi çizin.</string>
+    <string name="private_pin_hint">PIN / şifre / desen</string>
     <string name="private_pin_save">Kaydet</string>
     <string name="private_pin_clear">Temizle</string>
     <string name="private_pin_saved">Kaydedildi.</string>

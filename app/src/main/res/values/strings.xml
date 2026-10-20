@@ -89,8 +89,8 @@
     <string name="import_failures">Failed:</string>
     <string name="import_working">Restoring…</string>
     <string name="private_pin_title">Private space PIN</string>
-    <string name="private_pin_message">Saved on-device with Android Keystore. Used to auto-unlock private space before launching a pinned shortcut.</string>
-    <string name="private_pin_hint">PIN / password</string>
+    <string name="private_pin_message">Saved on-device with Android Keystore. Used to auto-unlock private space before launching a pinned shortcut. Type a PIN or password, or draw your pattern.</string>
+    <string name="private_pin_hint">PIN / password / pattern</string>
     <string name="private_pin_save">Save</string>
     <string name="private_pin_clear">Clear</string>
     <string name="private_pin_saved">Saved.</string>

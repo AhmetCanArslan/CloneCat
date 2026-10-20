@@ -89,8 +89,8 @@
     <string name="import_failures">失败：</string>
     <string name="import_working">正在恢复…</string>
     <string name="private_pin_title">私密空间 PIN 码</string>
-    <string name="private_pin_message">通过 Android Keystore 保存在设备上。用于在启动已固定的快捷方式之前自动解锁私密空间。</string>
-    <string name="private_pin_hint">PIN 码 / 密码</string>
+    <string name="private_pin_message">通过 Android Keystore 保存在设备上。用于在启动已固定的快捷方式之前自动解锁私密空间。输入 PIN 码或密码，或绘制解锁图案。</string>
+    <string name="private_pin_hint">PIN 码 / 密码 / 图案</string>
     <string name="private_pin_save">保存</string>
     <string name="private_pin_clear">清除</string>
     <string name="private_pin_saved">已保存。</string>
