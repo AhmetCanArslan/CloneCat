@@ -3,6 +3,7 @@ package com.arslan.clonecat.device
 import android.content.Context
 import com.arslan.clonecat.R
 import com.arslan.clonecat.cmd.AdbCommandBuilder
+import kotlinx.coroutines.delay
 
 enum class UserType(val labelRes: Int) {
     PRIMARY(R.string.type_primary),
@@ -123,4 +124,16 @@ object UserRepository {
     suspend fun unlock(id: Int, credential: String) =
         Device.run(AdbCommandBuilder.unlockUser(id, credential))
 
+    suspend fun isUnlocked(id: Int) = listUsers().firstOrNull { it.id == id }?.unlocked == true
+
+    suspend fun unlockPrivate(id: Int, credential: String?): Boolean {
+        if (!credential.isNullOrBlank()) unlock(id, credential)
+        if (isUnlocked(id)) return true
+        Device.run(AdbCommandBuilder.requestUnlockPrompt(id))
+        repeat(120) {
+            delay(500)
+            if (isUnlocked(id)) return true
+        }
+        return false
+    }
 }

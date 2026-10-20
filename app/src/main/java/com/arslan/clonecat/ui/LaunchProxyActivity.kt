@@ -75,22 +75,12 @@ class LaunchProxyActivity : ComponentActivity() {
     }
 
     private suspend fun preparePrivate(userId: Int): Boolean {
-        var user: DeviceUser? = userOrFinish(userId) ?: return false
-        if (user?.running != true) {
-            UserRepository.startUser(userId)
-            user = UserRepository.listUsers().firstOrNull { it.id == userId }
-        }
-        val pin = PrivateCredentialStore.get(this)
-        if (!pin.isNullOrBlank()) {
-            Device.run(AdbCommandBuilder.unlockUser(userId, pin))
-            return true
-        }
-        if (user != null && !user.unlocked) {
-            toast(getString(R.string.proxy_private_locked))
-            finish()
-            return false
-        }
-        return true
+        val user = userOrFinish(userId) ?: return false
+        if (!user.running) UserRepository.startUser(userId)
+        if (UserRepository.unlockPrivate(userId, PrivateCredentialStore.get(this))) return true
+        toast(getString(R.string.proxy_private_locked))
+        finish()
+        return false
     }
 
     private suspend fun resolveComponent(userId: Int, pkg: String): String? {

@@ -267,12 +267,7 @@ class UserDetailActivity : BaseActivity() {
         lifecycleScope.launch {
             if (!user.running) UserRepository.startUser(user.id)
             if (user.type == UserType.PRIVATE) {
-                val pin = PrivateCredentialStore.get(this@UserDetailActivity)
-                if (!pin.isNullOrBlank()) {
-                    com.arslan.clonecat.device.Device.run(
-                        com.arslan.clonecat.cmd.AdbCommandBuilder.unlockUser(user.id, pin)
-                    )
-                }
+                UserRepository.unlockPrivate(user.id, PrivateCredentialStore.get(this@UserDetailActivity))
             }
             val component = AppRepository.launcherComponent(this@UserDetailActivity, user.id, app.packageName)
             if (component == null) {
