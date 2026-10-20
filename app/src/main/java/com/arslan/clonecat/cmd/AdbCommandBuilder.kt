@@ -1,5 +1,7 @@
 package com.arslan.clonecat.cmd
 
+import org.lsposed.hiddenapibypass.HiddenApiBypass
+
 data class DeviceCommand(val argv: String, val label: String)
 
 object AdbCommandBuilder {
@@ -73,5 +75,18 @@ object AdbCommandBuilder {
     fun unlockUser(userId: Int, credential: String) = DeviceCommand(
         "cmd lock_settings verify --user $userId --old $credential",
         "Unlock user $userId"
+    )
+
+    private val quietModeCode by lazy {
+        HiddenApiBypass.addHiddenApiExemptions("Landroid/os/IUserManager")
+        Class.forName("android.os.IUserManager\$Stub")
+            .getDeclaredField("TRANSACTION_requestQuietModeEnabled")
+            .apply { isAccessible = true }
+            .getInt(null)
+    }
+
+    fun requestUnlockPrompt(userId: Int) = DeviceCommand(
+        "service call user $quietModeCode s16 com.android.shell i32 0 i32 $userId i32 0 i32 0",
+        "Ask to unlock user $userId"
     )
 }
