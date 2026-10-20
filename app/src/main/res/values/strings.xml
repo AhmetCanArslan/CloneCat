@@ -109,5 +109,11 @@
     <string name="error_no_permission">Shizuku\'s shell lacks permission for this user. Some OEM profiles block it.</string>
     <string name="error_no_user">That user no longer exists. Refresh the user list.</string>
     <string name="error_unknown_package">The package is not installed for user 0, so there is nothing to clone.</string>
+    <string name="type_primary">PRIMARY</string>
+    <string name="type_secondary">SECONDARY</string>
+    <string name="type_managed">MANAGED</string>
+    <string name="type_clone">CLONE</string>
+    <string name="type_private">PRIVATE</string>
+    <string name="type_other">OTHER</string>
     <string name="error_exit_code">exit code %1$d</string>
 </resources>

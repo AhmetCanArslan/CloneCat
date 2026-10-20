@@ -146,7 +146,7 @@ class MainActivity : BaseActivity() {
             toast(getString(R.string.no_target_users))
             return
         }
-        val labels = targets.map { "${it.label} · ${it.type.name}" }.toTypedArray()
+        val labels = targets.map { "${it.label} · ${getString(it.type.labelRes)}" }.toTypedArray()
         val checked = BooleanArray(targets.size)
         MaterialAlertDialogBuilder(this)
             .setTitle(getString(R.string.clone_into_users_title, packages.size))

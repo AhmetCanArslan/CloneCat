@@ -1,8 +1,15 @@
 package com.arslan.clonecat.device
 
+import com.arslan.clonecat.R
 import com.arslan.clonecat.cmd.AdbCommandBuilder
 
-enum class UserType { PRIMARY, SECONDARY, MANAGED, CLONE, PRIVATE, OTHER;
+enum class UserType(val labelRes: Int) {
+    PRIMARY(R.string.type_primary),
+    SECONDARY(R.string.type_secondary),
+    MANAGED(R.string.type_managed),
+    CLONE(R.string.type_clone),
+    PRIVATE(R.string.type_private),
+    OTHER(R.string.type_other);
 
     val isProfile: Boolean get() = this == MANAGED || this == CLONE || this == PRIVATE
 

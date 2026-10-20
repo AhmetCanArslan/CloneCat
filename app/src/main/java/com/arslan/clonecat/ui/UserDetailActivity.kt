@@ -198,7 +198,7 @@ class UserDetailActivity : BaseActivity() {
             return
         }
         val labels = backup.users
-            .map { "${it.name} · ${it.type.name} (${it.apps.size})" }
+            .map { "${it.name} · ${getString(it.type.labelRes)} (${it.apps.size})" }
             .toTypedArray()
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.import_source_title)

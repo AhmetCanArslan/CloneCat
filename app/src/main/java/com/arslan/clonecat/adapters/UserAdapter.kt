@@ -39,7 +39,7 @@ class UserAdapter(
             if (user.running) context.getString(R.string.state_running)
             else context.getString(R.string.state_stopped)
         )
-        holder.binding.typeChip.text = user.type.name
+        holder.binding.typeChip.text = context.getString(user.type.labelRes)
         holder.binding.typeChip.chipBackgroundColor =
             android.content.res.ColorStateList.valueOf(UserColors.of(context, user.id, user.type))
         holder.binding.pinScreenButton.setOnClickListener { onPinScreen(user) }
