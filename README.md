@@ -66,3 +66,11 @@ compileSdk 36, targetSdk 36, minSdk 30. Views + viewBinding, no Compose. AGP 9 b
 ## Privacy
 
 No account, no ads, no analytics. No internet permission. Everything stays on the device.
+
+## License
+
+Copyright (C) 2026 Ahmet Can Arslan
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the [GNU General Public License](LICENSE) for more details.
