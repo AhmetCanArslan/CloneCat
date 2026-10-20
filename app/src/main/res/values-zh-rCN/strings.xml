@@ -1,0 +1,120 @@
+<resources>
+    <string name="app_name">CloneCat</string>
+
+    <string name="users_title">用户</string>
+    <string name="user_meta">id %1$d · %2$s</string>
+    <string name="state_running">运行中</string>
+    <string name="state_stopped">已停止</string>
+    <string name="no_users">未找到用户。Shizuku 是否正在运行？</string>
+
+    <string name="app_meta">%1$s · uid %2$d</string>
+    <string name="no_apps">没有匹配的应用。</string>
+    <string name="search_hint">搜索软件包</string>
+    <string name="show_system">系统应用</string>
+
+    <string name="launch">启动</string>
+    <string name="pin">固定</string>
+    <string name="remove">移除</string>
+    <string name="clone">克隆</string>
+    <string name="done">完成</string>
+
+    <string name="clone_title">克隆到 %1$s</string>
+    <string name="clone_selected">克隆 %1$d 个</string>
+    <string name="clone_into_users_title">将 %1$d 个应用克隆到</string>
+    <string name="select_apps_title">选择应用</string>
+    <string name="already_cloned">已克隆</string>
+    <string name="no_target_users">此设备上没有个人资料或次要用户。</string>
+    <string name="clone_done">已克隆 %1$d 个应用。</string>
+    <string name="clone_failed_title">部分应用无法克隆</string>
+    <string name="missing_play_title">此处缺少 Google Play</string>
+    <string name="missing_play_message">此用户没有 Google Play。克隆到这里的应用会因“请从装有 Google Play 的设备安装此应用”而失败。缺少：\n\n%1$s\n\n要将它们安装到此用户吗？</string>
+    <string name="missing_play_action">安装 Play</string>
+    <string name="play_source_title">Play 商店记录已清除</string>
+    <string name="play_source_message">此用户只接受完整重新安装，因此这些应用的 Play 商店安装记录已对所有用户清除：\n\n%1$s\n\n在你从 Play 商店重新安装一次之前，它们可能会要求你再次从 Play 下载。</string>
+    <string name="play_source_action">打开 Play 商店</string>
+    <string name="nothing_to_clone">用户 0 的所有应用都已安装在这里。</string>
+
+    <string name="remove_title">移除应用</string>
+    <string name="remove_message">要从 %2$s 卸载 %1$s 吗？该应用在其他用户中仍会保留。</string>
+
+    <string name="pin_all_title">固定快捷方式</string>
+    <string name="pin_all_message">要为 %1$d 个应用固定主屏幕快捷方式吗？启动器会逐个应用询问。</string>
+    <string name="pin_all_done">已请求 %1$d 个快捷方式。</string>
+    <string name="pin_requested">快捷方式已保存 — 如有提示，请在主屏幕上确认。</string>
+    <string name="shortcut_edit_title">快捷方式</string>
+    <string name="shortcut_name_hint">快捷方式名称</string>
+    <string name="shortcut_ring">显示个人资料颜色环</string>
+    <string name="shortcut_pick_icon">选择图标</string>
+    <string name="icon_tab_apps">应用</string>
+    <string name="icon_tab_custom">自定义</string>
+    <string name="shortcut_reset">重置</string>
+    <string name="pin_unsupported">此启动器不支持固定快捷方式。</string>
+    <string name="action_pin_user_apps">将应用界面添加到主屏幕</string>
+    <string name="pin_user_apps_requested">已请求快捷方式 — 请在主屏幕上确认。</string>
+    <string name="user_apps_long_label">%1$s 的应用</string>
+    <string name="user_apps_empty">此用户中未安装任何应用。</string>
+    <string name="shortcut_stale">目标用户或应用已不存在。</string>
+    <string name="no_launcher_activity">未找到此应用的 MAIN/LAUNCHER activity。</string>
+
+    <string name="switch_title">切换用户</string>
+    <string name="switch_message">切换会锁定当前会话，并将整个设备切换到该用户。</string>
+    <string name="switch_action">切换</string>
+    <string name="secondary_launch_hint">已在完整的次要用户中启动 — 切换到该用户后才可见。</string>
+
+    <string name="proxy_shizuku_missing">Shizuku 尚未就绪。</string>
+    <string name="proxy_private_locked">私密空间已锁定。请先解锁，然后再次点按快捷方式。</string>
+    <string name="proxy_user_gone">该用户已不存在。</string>
+    <string name="proxy_secondary_message">此应用位于完整的次要用户中，无法显示在当前用户之上。现在切换到该用户吗？</string>
+
+    <string name="action_refresh">刷新</string>
+    <string name="action_setup">Shizuku 设置</string>
+    <string name="action_pin_all">为所有应用固定快捷方式</string>
+    <string name="action_start_user">启动用户</string>
+    <string name="action_stop_user">停止用户</string>
+    <string name="action_user_color">个人资料颜色</string>
+    <string name="action_switch_user">切换到该用户</string>
+    <string name="action_private_pin">私密空间 PIN 码</string>
+    <string name="action_export_user">导出此用户的应用</string>
+    <string name="export_failed">导出失败。</string>
+    <string name="export_user_done">已导出 %1$d 个应用。</string>
+    <string name="import_failed">无法读取该备份文件。</string>
+    <string name="action_import_user">将应用导入此用户</string>
+    <string name="import_source_title">选择文件中的哪个用户？</string>
+    <string name="import_confirm_title">导入应用</string>
+    <string name="import_confirm_message">要将“%2$s”中的 %1$d 个应用安装到 %3$s 吗？</string>
+    <string name="import_action">恢复</string>
+    <string name="import_summary_title">导入完成</string>
+    <string name="import_installed">已安装：%1$d\n已存在：%2$d</string>
+    <string name="import_not_on_device">此设备上没有可复制的 APK — 这些应用未安装在任何用户中：</string>
+    <string name="import_failures">失败：</string>
+    <string name="import_working">正在恢复…</string>
+    <string name="private_pin_title">私密空间 PIN 码</string>
+    <string name="private_pin_message">通过 Android Keystore 保存在设备上。用于在启动已固定的快捷方式之前自动解锁私密空间。</string>
+    <string name="private_pin_hint">PIN 码 / 密码</string>
+    <string name="private_pin_save">保存</string>
+    <string name="private_pin_clear">清除</string>
+    <string name="private_pin_saved">已保存。</string>
+    <string name="private_pin_cleared">已清除。</string>
+
+    <string name="setup_not_installed">未安装 Shizuku。CloneCat 需要它与软件包管理器通信。</string>
+    <string name="setup_not_running">Shizuku 已安装但未运行。请启动它，然后返回。</string>
+    <string name="setup_no_permission">Shizuku 正在运行。请授予 CloneCat 使用权限。</string>
+    <string name="setup_ready">Shizuku 已就绪。</string>
+    <string name="setup_action_install">获取 Shizuku</string>
+    <string name="setup_action_start">打开 Shizuku</string>
+    <string name="setup_action_grant">授予权限</string>
+    <string name="setup_action_continue">继续</string>
+    <string name="error_clone_blocked">此 ROM 拒绝在克隆用户中对第三方应用执行 `install-existing`，APK 会话安装也失败了。请使用厂商的应用双开界面处理此软件包。</string>
+    <string name="error_user_stopped">目标用户已停止或已锁定。请先启动或解锁。</string>
+    <string name="error_no_permission">Shizuku 的 shell 没有此用户的权限。部分厂商的个人资料会阻止它。</string>
+    <string name="error_no_user">该用户已不存在。请刷新用户列表。</string>
+    <string name="error_unknown_package">该软件包未安装在用户 0 中，因此没有可克隆的内容。</string>
+    <string name="type_primary">主用户</string>
+    <string name="type_secondary">次要用户</string>
+    <string name="type_managed">工作</string>
+    <string name="type_clone">克隆</string>
+    <string name="type_private">私密</string>
+    <string name="type_other">其他</string>
+    <string name="user_fallback_name">用户 %1$d</string>
+    <string name="error_exit_code">退出代码 %1$d</string>
+</resources>
