@@ -32,14 +32,16 @@ object ShortcutIcon {
         UserType.OTHER -> 0xFF546E7A.toInt()
     }
 
-    fun of(context: Context, pkg: String, fallback: Drawable?, user: DeviceUser? = null): Icon {
+    fun of(context: Context, pkg: String, fallback: Drawable?, user: DeviceUser, ring: Boolean): Icon {
         val drawable = hiResIcon(context, pkg) ?: fallback
             ?: return Icon.createWithResource(context, R.mipmap.ic_launcher)
 
         val size = iconSize(context)
         val bitmap = if (drawable is AdaptiveIconDrawable) fullBleed(drawable, size)
         else rasterize(drawable, size)
-        if (user != null && user.id != 0) drawRing(bitmap, UserColors.of(context, user.id, user.type))
+        val color = UserColors.of(context, user.id, user.type)
+        if (ring && user.id != 0) drawRing(bitmap, color)
+        drawUid(bitmap, user.id, color)
         return Icon.createWithAdaptiveBitmap(bitmap)
     }
 
@@ -85,6 +87,25 @@ object ShortcutIcon {
         paint.strokeWidth = stroke
         paint.color = color
         Canvas(bitmap).drawPath(path, paint)
+    }
+
+    private fun drawUid(bitmap: Bitmap, uid: Int, color: Int) {
+        val size = bitmap.width.toFloat()
+        val radius = size / 3f
+        val badge = radius * 0.3f
+        val cx = size / 2f - radius * 0.5f
+        val canvas = Canvas(bitmap)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        paint.color = color
+        canvas.drawCircle(cx, cx, badge, paint)
+
+        val text = uid.toString()
+        paint.color = 0xFFFFFFFF.toInt()
+        paint.textAlign = Paint.Align.CENTER
+        paint.isFakeBoldText = true
+        paint.textSize = badge * 1.1f
+        paint.textSize = minOf(paint.textSize, paint.textSize * badge * 1.6f / paint.measureText(text))
+        canvas.drawText(text, cx, cx - (paint.descent() + paint.ascent()) / 2f, paint)
     }
 
     fun preview(drawable: Drawable, color: Int?): Bitmap {

@@ -82,7 +82,7 @@ object ShortcutRepository {
         return ShortcutInfo.Builder(context, id)
             .setShortLabel(label)
             .setLongLabel("$label · ${user.label(context)}")
-            .setIcon(ShortcutIcon.custom(context, id) ?: ShortcutIcon.of(context, pkg, icon, user.takeIf { ShortcutCustomization.ring(context, id) }))
+            .setIcon(ShortcutIcon.custom(context, id) ?: ShortcutIcon.of(context, pkg, icon, user, ShortcutCustomization.ring(context, id)))
             .setIntent(intent)
             .build()
     }
