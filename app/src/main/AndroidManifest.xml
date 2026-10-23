@@ -68,6 +68,14 @@
             android:noHistory="true"
             android:taskAffinity="" />
 
+        <activity
+            android:name=".ui.FreezeActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:autoRemoveFromRecents="true"
+            android:noHistory="true"
+            android:taskAffinity="" />
+
         <provider
             android:name="rikka.shizuku.ShizukuProvider"
             android:authorities="${applicationId}.shizuku"

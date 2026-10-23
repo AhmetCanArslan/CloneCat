@@ -117,4 +117,17 @@
     <string name="type_other">其他</string>
     <string name="user_fallback_name">用户 %1$d</string>
     <string name="error_exit_code">退出代码 %1$d</string>
+    <string name="action_freeze_apps">冻结应用</string>
+    <string name="action_pin_freeze">将冻结快捷方式添加到主屏幕</string>
+    <string name="freeze_choose">选择要冻结的应用</string>
+    <string name="freeze_export">导出冻结列表</string>
+    <string name="freeze_import">导入冻结列表</string>
+    <string name="freeze_apply">应用</string>
+    <string name="freeze_failed_title">无法更改这些应用</string>
+    <string name="freeze_list_empty">冻结列表为空。请先在“冻结应用”中选择。</string>
+    <string name="freeze_shortcut_label">冻结 %1$s</string>
+    <string name="freeze_done">已冻结 %1$d 个应用。</string>
+    <string name="unfreeze_done">已解冻 %1$d 个应用。</string>
+    <string name="freeze_exported">已导出 %1$d 个包。</string>
+    <string name="freeze_import_skipped">%1$d 个包不在此用户中，已跳过。</string>
 </resources>

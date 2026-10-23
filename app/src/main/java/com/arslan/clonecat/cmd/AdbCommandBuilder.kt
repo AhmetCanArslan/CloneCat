@@ -23,6 +23,15 @@ object AdbCommandBuilder {
         "Scan packages via dumpsys"
     )
 
+    fun listFrozen(userId: Int) =
+        DeviceCommand("pm list packages -d --user $userId", "List frozen apps of user $userId")
+
+    fun freeze(userId: Int, pkg: String) =
+        DeviceCommand("pm disable-user --user $userId $pkg", "Freeze $pkg in user $userId")
+
+    fun unfreeze(userId: Int, pkg: String) =
+        DeviceCommand("pm enable --user $userId $pkg", "Unfreeze $pkg in user $userId")
+
     fun installExisting(userId: Int, pkg: String) =
         DeviceCommand("pm install-existing --user $userId $pkg", "Clone $pkg into user $userId")
 

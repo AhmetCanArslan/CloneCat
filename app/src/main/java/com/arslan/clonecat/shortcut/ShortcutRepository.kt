@@ -7,6 +7,7 @@ import android.content.pm.ShortcutManager
 import com.arslan.clonecat.device.AppRepository
 import com.arslan.clonecat.device.DeviceUser
 import com.arslan.clonecat.device.UserType
+import com.arslan.clonecat.ui.FreezeActivity
 import com.arslan.clonecat.ui.UserAppsActivity
 import com.arslan.clonecat.ui.LaunchProxyActivity
 
@@ -18,6 +19,8 @@ object ShortcutRepository {
     fun idFor(userId: Int, pkg: String) = "u$userId:$pkg"
 
     fun screenIdFor(userId: Int) = "f$userId"
+
+    fun freezeIdFor(userId: Int) = "z$userId"
 
     fun isSupported(context: Context): Boolean =
         context.getSystemService(ShortcutManager::class.java)?.isRequestPinShortcutSupported == true
@@ -31,20 +34,22 @@ object ShortcutRepository {
         val manager = context.getSystemService(ShortcutManager::class.java) ?: return false
         if (!manager.isRequestPinShortcutSupported) return false
 
-        val shortcut = build(context, user, pkg, component)
-        if (isPinned(manager, shortcut.id)) {
-            return runCatching { manager.updateShortcuts(listOf(shortcut)); true }.getOrDefault(false)
-        }
-        val requested = runCatching { manager.requestPinShortcut(shortcut, null) }.getOrDefault(false)
-        if (requested) remember(context, shortcut.id)
-        return requested
+        return request(context, manager, build(context, user, pkg, component))
     }
 
     suspend fun pinUserScreen(context: Context, user: DeviceUser): Boolean {
         val manager = context.getSystemService(ShortcutManager::class.java) ?: return false
         if (!manager.isRequestPinShortcutSupported) return false
+        return request(context, manager, buildUserScreen(context, user))
+    }
 
-        val shortcut = buildUserScreen(context, user)
+    suspend fun pinFreeze(context: Context, user: DeviceUser): Boolean {
+        val manager = context.getSystemService(ShortcutManager::class.java) ?: return false
+        if (!manager.isRequestPinShortcutSupported) return false
+        return request(context, manager, buildFreeze(context, user))
+    }
+
+    private fun request(context: Context, manager: ShortcutManager, shortcut: ShortcutInfo): Boolean {
         if (isPinned(manager, shortcut.id)) {
             return runCatching { manager.updateShortcuts(listOf(shortcut)); true }.getOrDefault(false)
         }
@@ -109,11 +114,32 @@ object ShortcutRepository {
             .build()
     }
 
+    fun buildFreeze(context: Context, user: DeviceUser): ShortcutInfo {
+        val intent = Intent(context, FreezeActivity::class.java).apply {
+            action = FreezeActivity.ACTION_TOGGLE
+            `package` = context.packageName
+            data = android.net.Uri.parse("clonecat://freeze/${user.id}")
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            putExtra(FreezeActivity.EXTRA_USER_ID, user.id)
+        }
+
+        val id = freezeIdFor(user.id)
+        val label = ShortcutCustomization.name(context, id)
+            ?: context.getString(com.arslan.clonecat.R.string.freeze_shortcut_label, user.label(context))
+
+        return ShortcutInfo.Builder(context, id)
+            .setShortLabel(label)
+            .setIcon(ShortcutIcon.custom(context, id) ?: ShortcutIcon.userScreen(context, user, com.arslan.clonecat.R.drawable.ic_picon_ac_unit))
+            .setIntent(intent)
+            .build()
+    }
+
     suspend fun refreshUser(context: Context, user: DeviceUser) {
         val manager = context.getSystemService(ShortcutManager::class.java) ?: return
         val updated = ids(context).mapNotNull { id ->
             when {
                 id == screenIdFor(user.id) -> buildUserScreen(context, user)
+                id == freezeIdFor(user.id) -> buildFreeze(context, user)
                 id.startsWith("u${user.id}:") -> build(context, user, id.substringAfter(':'), null)
                 else -> null
             }
@@ -131,10 +157,9 @@ object ShortcutRepository {
         val stale = mutableListOf<String>()
 
         known.forEach { id ->
-            if (id.startsWith("f")) {
-                val userId = id.removePrefix("f").toIntOrNull()
-                val user = userId?.let { usersById[it] }
-                if (user == null) stale.add(id) else alive.add(buildUserScreen(context, user))
+            if (id[0] in "fz") {
+                val user = id.drop(1).toIntOrNull()?.let { usersById[it] }
+                if (user == null) stale.add(id) else alive.add(buildScreen(context, id, user))
                 return@forEach
             }
             val userId = id.removePrefix("u").substringBefore(':').toIntOrNull()
@@ -155,6 +180,9 @@ object ShortcutRepository {
             forget(context, stale)
         }
     }
+
+    private suspend fun buildScreen(context: Context, id: String, user: DeviceUser): ShortcutInfo =
+        if (id[0] == 'z') buildFreeze(context, user) else buildUserScreen(context, user)
 
     private fun isPinned(manager: ShortcutManager, id: String): Boolean =
         runCatching { manager.pinnedShortcuts.any { it.id == id && it.isEnabled } }.getOrDefault(false)

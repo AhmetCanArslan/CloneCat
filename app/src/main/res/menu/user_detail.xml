@@ -6,6 +6,14 @@
         android:title="@string/action_pin_all"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_freeze_apps"
+        android:title="@string/action_freeze_apps"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_pin_freeze"
+        android:title="@string/action_pin_freeze"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_export_user"
         android:title="@string/action_export_user"
         app:showAsAction="never" />
