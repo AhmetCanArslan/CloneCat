@@ -17,6 +17,7 @@ class AppAdapter(
     data class AppMetadata(val label: String, val icon: android.graphics.drawable.Drawable?)
 
     private val apps = mutableListOf<AppEntry>()
+    var frozen: Set<String> = emptySet()
 
     fun submit(items: List<AppEntry>) {
         apps.clear()
@@ -36,8 +37,10 @@ class AppAdapter(
         val app = apps[position]
         val context = holder.itemView.context
         holder.binding.appName.text = app.packageName
-        holder.binding.appMeta.text =
-            context.getString(R.string.app_meta, app.packageName, app.uid)
+        val isFrozen = app.packageName in frozen
+        val meta = context.getString(R.string.app_meta, app.packageName, app.uid)
+        holder.binding.appMeta.text = if (isFrozen) "${context.getString(R.string.frozen)} · $meta" else meta
+        holder.binding.appIcon.alpha = if (isFrozen) 0.4f else 1f
         holder.binding.appIcon.setImageDrawable(null)
         holder.itemView.tag = app.packageName
 

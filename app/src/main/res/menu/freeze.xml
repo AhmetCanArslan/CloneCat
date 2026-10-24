@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_pin_freeze"
+        android:title="@string/action_pin_freeze"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_freeze_export"
+        android:title="@string/freeze_export"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_freeze_import"
+        android:title="@string/freeze_import"
+        app:showAsAction="never" />
+</menu>

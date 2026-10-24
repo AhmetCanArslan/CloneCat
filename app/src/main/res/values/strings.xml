@@ -119,15 +119,20 @@
     <string name="error_exit_code">exit code %1$d</string>
     <string name="action_freeze_apps">Freeze apps</string>
     <string name="action_pin_freeze">Add freeze shortcut to home screen</string>
-    <string name="freeze_choose">Choose apps to freeze</string>
     <string name="freeze_export">Export freeze list</string>
     <string name="freeze_import">Import freeze list</string>
-    <string name="freeze_apply">Apply</string>
     <string name="freeze_failed_title">Could not change these apps</string>
-    <string name="freeze_list_empty">No apps in the freeze list. Choose them under Freeze apps first.</string>
     <string name="freeze_shortcut_label">Freeze %1$s</string>
     <string name="freeze_done">Froze %1$d app(s).</string>
     <string name="unfreeze_done">Unfroze %1$d app(s).</string>
     <string name="freeze_exported">Exported %1$d package(s).</string>
     <string name="freeze_import_skipped">%1$d package(s) are not in this user and were skipped.</string>
+    <string name="frozen">Frozen</string>
+    <string name="freeze_count">Freeze %1$d</string>
+    <string name="unfreeze_count">Unfreeze %1$d</string>
+    <string name="freeze_subtitle">%1$s · %2$d/%3$d frozen</string>
+    <string name="frozen_launch_title">%1$s is frozen</string>
+    <string name="frozen_launch_message">Unfreeze it and open?</string>
+    <string name="unfreeze_and_open">Unfreeze and open</string>
+    <string name="freeze_list_empty">No apps selected. Tick the apps you want to freeze first.</string>
 </resources>

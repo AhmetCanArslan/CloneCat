@@ -6,12 +6,14 @@ import android.content.pm.PackageManager
 import android.content.pm.ShortcutManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.LinearGradient
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.Rect
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
+import android.graphics.Shader
 import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
@@ -48,18 +50,35 @@ object ShortcutIcon {
     fun custom(context: Context, id: String): Icon? =
         ShortcutCustomization.iconBitmap(context, id)?.let { Icon.createWithAdaptiveBitmap(it) }
 
-    fun userScreen(context: Context, user: DeviceUser, glyphRes: Int = R.drawable.ic_apps_grid): Icon {
+    fun userScreen(context: Context, user: DeviceUser): Icon {
         val size = iconSize(context)
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         canvas.drawColor(UserColors.of(context, user.id, user.type))
 
-        val glyph = androidx.core.content.ContextCompat.getDrawable(context, glyphRes)
+        val glyph = androidx.core.content.ContextCompat.getDrawable(context, R.drawable.ic_apps_grid)
             ?.apply { setTint(0xFFFFFFFF.toInt()) } ?: return Icon.createWithBitmap(bitmap)
         val inset = (size * 0.3f).toInt()
         glyph.setBounds(inset, inset, size - inset, size - inset)
         glyph.draw(canvas)
 
+        return Icon.createWithAdaptiveBitmap(bitmap)
+    }
+
+    fun freeze(context: Context, user: DeviceUser): Icon {
+        val size = iconSize(context)
+        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        paint.shader = LinearGradient(0f, 0f, size.toFloat(), size.toFloat(), 0xFFB3E5FC.toInt(), 0xFF0D47A1.toInt(), Shader.TileMode.CLAMP)
+        canvas.drawRect(0f, 0f, size.toFloat(), size.toFloat(), paint)
+
+        val glyph = androidx.core.content.ContextCompat.getDrawable(context, R.drawable.ic_frozen_claw)
+        val inset = (size * 0.31f).toInt()
+        glyph?.setBounds(inset, inset, size - inset, size - inset)
+        glyph?.draw(canvas)
+
+        drawUid(bitmap, user.id, UserColors.of(context, user.id, user.type))
         return Icon.createWithAdaptiveBitmap(bitmap)
     }
 

@@ -25,8 +25,6 @@ import com.arslan.clonecat.device.UserType
 import com.arslan.clonecat.shortcut.ShortcutRepository
 import com.arslan.clonecat.shortcut.UserColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 
 class UserDetailActivity : BaseActivity() {
@@ -71,13 +69,9 @@ class UserDetailActivity : BaseActivity() {
         ActivityResultContracts.OpenDocument()
     ) { uri -> if (uri != null) readBackup(uri) }
 
-    private val freezeExport = registerForActivityResult(
-        ActivityResultContracts.CreateDocument("text/plain")
-    ) { uri -> if (uri != null) exportFreeze(uri) }
-
-    private val freezeImport = registerForActivityResult(
-        ActivityResultContracts.OpenDocument()
-    ) { uri -> if (uri != null) importFreeze(uri) }
+    private val freezeScreen = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { load() }
 
     private val clonePicker = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val packages = result.data?.getStringArrayExtra(ClonePickerActivity.RESULT_PACKAGES).orEmpty()
@@ -111,7 +105,7 @@ class UserDetailActivity : BaseActivity() {
                     )
                 }
             },
-            onLaunch = { app -> launch(app) },
+            onLaunch = { app -> if (app.packageName in adapter.frozen) confirmUnfreeze(app) else launch(app) },
             onPin = { app -> pin(app) },
             onRemove = { app -> confirmRemove(app) }
         )
@@ -135,6 +129,7 @@ class UserDetailActivity : BaseActivity() {
             render()
         }
         binding.cloneFab.setOnClickListener { openClonePicker() }
+        binding.freezeFab.setOnClickListener { openFreeze() }
 
         load()
     }
@@ -151,14 +146,6 @@ class UserDetailActivity : BaseActivity() {
         }
         R.id.action_pin_all -> {
             pinAll()
-            true
-        }
-        R.id.action_freeze_apps -> {
-            freezeOptions()
-            true
-        }
-        R.id.action_pin_freeze -> {
-            pinFreeze()
             true
         }
         R.id.action_export_user -> {
@@ -197,6 +184,7 @@ class UserDetailActivity : BaseActivity() {
         }
         lifecycleScope.launch {
             allApps = AppRepository.appsFor(user.id)
+            adapter.frozen = FreezeRepository.frozen(user.id)
             binding.swipeRefresh.isRefreshing = false
             render()
         }
@@ -430,104 +418,31 @@ class UserDetailActivity : BaseActivity() {
         }
     }
 
-    private fun freezeOptions() {
-        val items = arrayOf(
-            getString(R.string.freeze_choose),
-            getString(R.string.freeze_export),
-            getString(R.string.freeze_import)
+    private fun openFreeze() {
+        freezeScreen.launch(
+            Intent(this, FreezeListActivity::class.java)
+                .putExtra(FreezeListActivity.EXTRA_USER_ID, user.id)
+                .putExtra(FreezeListActivity.EXTRA_USER_NAME, user.name)
+                .putExtra(FreezeListActivity.EXTRA_USER_TYPE, user.type.name)
         )
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.action_freeze_apps)
-            .setItems(items) { _, which ->
-                when (which) {
-                    0 -> chooseFrozen()
-                    1 -> freezeExport.launch("clonecat-freeze-${user.type.name.lowercase()}.txt")
-                    else -> freezeImport.launch(arrayOf("text/plain", "*/*"))
-                }
-            }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
     }
 
-    private fun chooseFrozen() {
-        binding.swipeRefresh.isRefreshing = true
+    private fun confirmUnfreeze(app: AppEntry) {
         lifecycleScope.launch {
-            val frozen = FreezeRepository.frozen(user.id)
-            val saved = FreezeRepository.list(this@UserDetailActivity, user.id)
-            val apps = (allApps.map { it.packageName } + frozen).distinct()
-            val labels = apps.map { async { AppRepository.label(this@UserDetailActivity, user.id, it) } }.awaitAll()
-            val order = apps.indices.sortedBy { labels[it].lowercase() }
-            val packages = order.map { apps[it] }
-            val names = order.map { if (apps[it] in frozen) "❄ ${labels[it]}" else labels[it] }.toTypedArray()
-            val checked = packages.map { it in frozen || it in saved }.toBooleanArray()
-            binding.swipeRefresh.isRefreshing = false
+            val label = AppRepository.label(this@UserDetailActivity, user.id, app.packageName)
             MaterialAlertDialogBuilder(this@UserDetailActivity)
-                .setTitle(R.string.freeze_choose)
-                .setMultiChoiceItems(names, checked) { _, index, value -> checked[index] = value }
-                .setPositiveButton(R.string.freeze_apply) { _, _ ->
-                    applyFreeze(packages.filterIndexed { index, _ -> checked[index] }.toSet(), frozen)
+                .setTitle(getString(R.string.frozen_launch_title, label))
+                .setMessage(R.string.frozen_launch_message)
+                .setPositiveButton(R.string.unfreeze_and_open) { _, _ ->
+                    lifecycleScope.launch {
+                        FreezeRepository.apply(user.id, listOf(app.packageName), false)
+                        adapter.frozen = adapter.frozen - app.packageName
+                        render()
+                        this@UserDetailActivity.launch(app)
+                    }
                 }
                 .setNegativeButton(android.R.string.cancel, null)
                 .show()
-        }
-    }
-
-    private fun applyFreeze(selected: Set<String>, frozen: Set<String>) {
-        FreezeRepository.save(this, user.id, selected)
-        binding.swipeRefresh.isRefreshing = true
-        lifecycleScope.launch {
-            val failed = FreezeRepository.apply(user.id, selected - frozen, true) +
-                FreezeRepository.apply(user.id, frozen - selected, false)
-            binding.swipeRefresh.isRefreshing = false
-            if (failed.isEmpty()) {
-                toast(getString(R.string.done))
-                return@launch
-            }
-            MaterialAlertDialogBuilder(this@UserDetailActivity)
-                .setTitle(R.string.freeze_failed_title)
-                .setMessage(failed.joinToString("\n"))
-                .setPositiveButton(android.R.string.ok, null)
-                .show()
-        }
-    }
-
-    private fun exportFreeze(uri: android.net.Uri) {
-        lifecycleScope.launch {
-            val packages = (FreezeRepository.list(this@UserDetailActivity, user.id) + FreezeRepository.frozen(user.id)).sorted()
-            val ok = runCatching {
-                contentResolver.openOutputStream(uri, "wt")?.use {
-                    it.write(packages.joinToString("\n").toByteArray())
-                } ?: error("no stream")
-            }.isSuccess
-            toast(if (ok) getString(R.string.freeze_exported, packages.size) else getString(R.string.export_failed))
-        }
-    }
-
-    private fun importFreeze(uri: android.net.Uri) {
-        val packages = runCatching {
-            contentResolver.openInputStream(uri)?.use { FreezeRepository.parse(it.readBytes().decodeToString()) }
-        }.getOrNull()
-        if (packages.isNullOrEmpty()) {
-            toast(getString(R.string.import_failed))
-            return
-        }
-        val installed = allApps.map { it.packageName }.toSet()
-        val usable = packages.filter { it in installed }
-        if (usable.size < packages.size) toast(getString(R.string.freeze_import_skipped, packages.size - usable.size))
-        lifecycleScope.launch {
-            val frozen = FreezeRepository.frozen(user.id)
-            applyFreeze(FreezeRepository.list(this@UserDetailActivity, user.id) + frozen + usable, frozen)
-        }
-    }
-
-    private fun pinFreeze() {
-        if (FreezeRepository.list(this, user.id).isEmpty()) {
-            toast(getString(R.string.freeze_list_empty))
-            return
-        }
-        lifecycleScope.launch {
-            val ok = ShortcutRepository.pinFreeze(this@UserDetailActivity, user)
-            toast(getString(if (ok) R.string.pin_requested else R.string.pin_unsupported))
         }
     }
 

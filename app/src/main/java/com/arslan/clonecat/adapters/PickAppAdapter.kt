@@ -18,7 +18,8 @@ class PickAppAdapter(
     private val selected: MutableSet<String>,
     private val locked: Set<String> = emptySet(),
     private val bindIcon: (String, (Drawable?) -> Unit) -> Unit,
-    private val onToggle: () -> Unit
+    private val onToggle: () -> Unit,
+    private val note: (String) -> String? = { null }
 ) : RecyclerView.Adapter<PickAppAdapter.Holder>() {
 
     private val apps = mutableListOf<PickApp>()
@@ -51,7 +52,7 @@ class PickAppAdapter(
         holder.binding.check.isChecked = isLocked || app.packageName in selected
         holder.binding.check.isEnabled = !isLocked
         holder.binding.appMeta.text =
-            if (isLocked) context.getString(R.string.already_cloned) else app.packageName
+            if (isLocked) context.getString(R.string.already_cloned) else note(app.packageName) ?: app.packageName
         holder.binding.check.setOnCheckedChangeListener { _, checked ->
             if (checked) selected.add(app.packageName) else selected.remove(app.packageName)
             onToggle()

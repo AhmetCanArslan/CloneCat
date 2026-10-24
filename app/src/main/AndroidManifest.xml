@@ -57,6 +57,11 @@
             android:parentActivityName=".ui.UserDetailActivity" />
 
         <activity
+            android:name=".ui.FreezeListActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.UserDetailActivity" />
+
+        <activity
             android:name=".ui.SetupActivity"
             android:exported="false" />
 

@@ -129,7 +129,7 @@ object ShortcutRepository {
 
         return ShortcutInfo.Builder(context, id)
             .setShortLabel(label)
-            .setIcon(ShortcutIcon.custom(context, id) ?: ShortcutIcon.userScreen(context, user, com.arslan.clonecat.R.drawable.ic_picon_ac_unit))
+            .setIcon(ShortcutIcon.custom(context, id) ?: ShortcutIcon.freeze(context, user))
             .setIntent(intent)
             .build()
     }

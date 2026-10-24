@@ -79,12 +79,27 @@
         </FrameLayout>
     </LinearLayout>
 
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/cloneFab"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        android:text="@string/clone"
-        app:icon="@drawable/ic_paw" />
+        android:orientation="horizontal">
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/freezeFab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="12dp"
+            android:contentDescription="@string/action_freeze_apps"
+            app:srcCompat="@drawable/ic_frozen_claw" />
+
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/cloneFab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/clone"
+            app:icon="@drawable/ic_paw" />
+    </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
