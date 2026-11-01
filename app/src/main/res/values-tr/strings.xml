@@ -9,7 +9,7 @@
 
     <string name="app_meta">%1$s · uid %2$d</string>
     <string name="no_apps">Eşleşen uygulama yok.</string>
-    <string name="search_hint">Paketlerde ara</string>
+    <string name="search_hint">Uygulama veya paket ara</string>
     <string name="show_system">Sistem uygulamaları</string>
 
     <string name="launch">Başlat</string>

@@ -9,7 +9,7 @@
 
     <string name="app_meta">%1$s · uid %2$d</string>
     <string name="no_apps">没有匹配的应用。</string>
-    <string name="search_hint">搜索软件包</string>
+    <string name="search_hint">搜索应用或软件包</string>
     <string name="show_system">系统应用</string>
 
     <string name="launch">启动</string>

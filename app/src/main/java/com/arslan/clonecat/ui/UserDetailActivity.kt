@@ -262,13 +262,18 @@ class UserDetailActivity : BaseActivity() {
     }
 
     private fun render() {
-        val filtered = allApps
-            .filter { showSystem || !it.isSystem }
-            .filter { query.isEmpty() || it.packageName.contains(query, ignoreCase = true) }
-        AppRepository.prefetch(applicationContext, filtered)
-        adapter.submit(filtered)
-        binding.emptyView.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
+        lifecycleScope.launch {
+            val visible = allApps.filter { showSystem || !it.isSystem }
+            val filtered = visible.filter { matches(it) }
+            AppRepository.prefetch(applicationContext, filtered)
+            adapter.submit(filtered)
+            binding.emptyView.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
+        }
     }
+
+    private suspend fun matches(app: AppEntry): Boolean = query.isEmpty() ||
+        app.packageName.contains(query, ignoreCase = true) ||
+        AppRepository.label(this, app.userId, app.packageName).contains(query, ignoreCase = true)
 
     private fun launch(app: AppEntry) {
         lifecycleScope.launch {
