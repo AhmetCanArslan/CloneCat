@@ -55,6 +55,8 @@ open class BaseActivity : AppCompatActivity() {
             }
         }
 
+        binding.uidToggle.isChecked = ShortcutCustomization.uid(this, id)
+        binding.uidToggle.visibility = binding.ringToggle.visibility
         binding.ringToggle.isChecked = ShortcutCustomization.ring(this, id)
         binding.ringToggle.visibility =
             if (ringColor == null) android.view.View.GONE else android.view.View.VISIBLE
@@ -83,6 +85,7 @@ open class BaseActivity : AppCompatActivity() {
                 val name = binding.nameField.text?.toString()?.trim().orEmpty()
                 ShortcutCustomization.setName(this, id, if (name == defaultLabel) null else name)
                 ShortcutCustomization.setRing(this, id, binding.ringToggle.isChecked)
+                ShortcutCustomization.setUid(this, id, binding.uidToggle.isChecked)
                 pickedDrawable?.let { ShortcutCustomization.saveIcon(this, id, it) }
                 pickedBitmap?.let { ShortcutCustomization.saveBitmap(this, id, it) }
                 onSave()

@@ -34,7 +34,7 @@ object ShortcutIcon {
         UserType.OTHER -> 0xFF546E7A.toInt()
     }
 
-    fun of(context: Context, pkg: String, fallback: Drawable?, user: DeviceUser, ring: Boolean): Icon {
+    fun of(context: Context, pkg: String, fallback: Drawable?, user: DeviceUser, ring: Boolean, showUid: Boolean = true): Icon {
         val drawable = hiResIcon(context, pkg) ?: fallback
             ?: return Icon.createWithResource(context, R.mipmap.ic_launcher)
 
@@ -43,7 +43,7 @@ object ShortcutIcon {
         else rasterize(drawable, size)
         val color = UserColors.of(context, user.id, user.type)
         if (ring && user.id != 0) drawRing(bitmap, color)
-        drawUid(bitmap, user.id, color)
+        if (showUid) drawUid(bitmap, user.id, color)
         return Icon.createWithAdaptiveBitmap(bitmap)
     }
 

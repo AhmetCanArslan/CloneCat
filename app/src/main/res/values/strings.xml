@@ -135,4 +135,5 @@
     <string name="frozen_launch_message">Unfreeze it and open?</string>
     <string name="unfreeze_and_open">Unfreeze and open</string>
     <string name="freeze_list_empty">No apps selected. Tick the apps you want to freeze first.</string>
+    <string name="shortcut_uid">Show user id badge</string>
 </resources>
