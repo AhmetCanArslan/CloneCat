@@ -136,4 +136,7 @@
     <string name="unfreeze_and_open">Çöz ve aç</string>
     <string name="freeze_list_empty">Hiç uygulama seçilmedi. Önce dondurmak istediğiniz uygulamaları işaretleyin.</string>
     <string name="shortcut_uid">Kullanıcı id rozetini göster</string>
+    <string name="action_about">Hakkında</string>
+    <string name="about_message">Sürüm %1$s\n%2$s</string>
+    <string name="about_open">GitHub\'ı aç</string>
 </resources>

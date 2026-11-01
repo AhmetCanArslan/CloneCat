@@ -92,11 +92,27 @@ class MainActivity : BaseActivity() {
             startActivity(Intent(this, SetupActivity::class.java))
             true
         }
+        R.id.action_about -> {
+            showAbout()
+            true
+        }
         R.id.action_private_pin -> {
             showPrivatePinDialog()
             true
         }
         else -> super.onOptionsItemSelected(item)
+    }
+
+    private fun showAbout() {
+        val version = packageManager.getPackageInfo(packageName, 0).versionName
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.app_name)
+            .setMessage(getString(R.string.about_message, version, GITHUB_URL))
+            .setPositiveButton(android.R.string.ok, null)
+            .setNeutralButton(R.string.about_open) { _, _ ->
+                startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(GITHUB_URL)))
+            }
+            .show()
     }
 
     private fun showPrivatePinDialog() {
@@ -202,4 +218,8 @@ class MainActivity : BaseActivity() {
     }
 
     private fun toast(message: String) = Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+
+    private companion object {
+        const val GITHUB_URL = "https://github.com/AhmetCanArslan/CloneCat"
+    }
 }

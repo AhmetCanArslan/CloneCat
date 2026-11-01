@@ -136,4 +136,7 @@
     <string name="unfreeze_and_open">解冻并打开</string>
     <string name="freeze_list_empty">未选择应用。请先勾选要冻结的应用。</string>
     <string name="shortcut_uid">显示用户 id 徽标</string>
+    <string name="action_about">关于</string>
+    <string name="about_message">版本 %1$s\n%2$s</string>
+    <string name="about_open">打开 GitHub</string>
 </resources>

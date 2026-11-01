@@ -136,4 +136,7 @@
     <string name="unfreeze_and_open">Unfreeze and open</string>
     <string name="freeze_list_empty">No apps selected. Tick the apps you want to freeze first.</string>
     <string name="shortcut_uid">Show user id badge</string>
+    <string name="action_about">About</string>
+    <string name="about_message">Version %1$s\n%2$s</string>
+    <string name="about_open">Open GitHub</string>
 </resources>
