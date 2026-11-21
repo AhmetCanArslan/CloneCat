@@ -87,9 +87,8 @@ object AdbCommandBuilder {
     )
 
     private val quietModeCode by lazy {
-        HiddenApiBypass.addHiddenApiExemptions("Landroid/os/IUserManager")
-        Class.forName("android.os.IUserManager\$Stub")
-            .getDeclaredField("TRANSACTION_requestQuietModeEnabled")
+        HiddenApiBypass.getStaticFields(Class.forName("android.os.IUserManager\$Stub"))
+            .first { it.name == "TRANSACTION_requestQuietModeEnabled" }
             .apply { isAccessible = true }
             .getInt(null)
     }
