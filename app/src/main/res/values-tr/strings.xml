@@ -139,4 +139,5 @@
     <string name="action_about">Hakkında</string>
     <string name="about_message">Sürüm %1$s\n%2$s</string>
     <string name="about_open">GitHub\'ı aç</string>
+    <string name="action_donate">Bana bir kahve ısmarla</string>
 </resources>

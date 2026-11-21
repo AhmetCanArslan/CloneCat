@@ -96,6 +96,10 @@ class MainActivity : BaseActivity() {
             showAbout()
             true
         }
+        R.id.action_donate -> {
+            startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(DONATE_URL)))
+            true
+        }
         R.id.action_private_pin -> {
             showPrivatePinDialog()
             true
@@ -221,5 +225,6 @@ class MainActivity : BaseActivity() {
 
     private companion object {
         const val GITHUB_URL = "https://github.com/AhmetCanArslan/CloneCat"
+        const val DONATE_URL = "https://buymeacoffee.com/ahmetcanarslan"
     }
 }

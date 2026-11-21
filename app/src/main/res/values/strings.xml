@@ -139,4 +139,5 @@
     <string name="action_about">About</string>
     <string name="about_message">Version %1$s\n%2$s</string>
     <string name="about_open">Open GitHub</string>
+    <string name="action_donate">Buy me a coffee</string>
 </resources>

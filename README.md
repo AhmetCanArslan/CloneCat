@@ -18,6 +18,12 @@ No root, no PC, no ADB cable. Everything runs on-device through Shizuku.
 
 <p align="center">User list &middot; apps of a user &middot; picking apps to install into a user</p>
 
+<p align="center">
+  <a href="https://www.buymeacoffee.com/ahmetcanarslan">
+    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="220" />
+  </a>
+</p>
+
 ## Features
 
 - List every user the device has, with app counts and status
